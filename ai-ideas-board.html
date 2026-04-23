@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Ideas Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #1d6e5e;
+      --accent-hover: #155046;
+      --accent-light: #e8f4f1;
+      --accent-text: #155046;
+      --bg: #faf9f6;
+      --surface: #ffffff;
+      --text: #1a1a18;
+      --text-2: #5c5c58;
+      --text-3: #969690;
+      --border: rgba(0,0,0,0.09);
+      --border-hover: rgba(0,0,0,0.2);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(250,249,246,0.93);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 clamp(1rem, 4vw, 2rem);
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; padding: 14px 0;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+    .logo-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .logo-text { font-size: 16px; font-weight: 500; letter-spacing: -0.01em; }
+
+    /* ── Main ── */
+    main {
+      max-width: 1100px; margin: 0 auto;
+      padding: 2rem clamp(1rem, 4vw, 2rem) 4rem;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 14px; font-weight: 500;
+      cursor: pointer; border: none; transition: background 0.15s, opacity 0.15s;
+      text-decoration: none; line-height: 1;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost {
+      background: transparent; color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: rgba(0,0,0,0.04); border-color: var(--border-hover); }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden; cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      display: flex; flex-direction: column;
+    }
+    .card:hover { border-color: var(--border-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card-thumb { width: 100%; height: 160px; object-fit: cover; display: block; flex-shrink: 0; background: #f0eeea; }
+    .card-body { padding: 1rem 1.1rem; flex: 1; display: flex; flex-direction: column; }
+    .tag {
+      display: inline-block; padding: 3px 10px;
+      background: var(--accent-light); color: var(--accent-text);
+      border-radius: 20px; font-size: 12px; font-weight: 500; margin-bottom: 8px;
+    }
+    .card-title { font-size: 15px; font-weight: 500; line-height: 1.35; margin-bottom: 6px; }
+    .card-desc {
+      font-size: 13px; color: var(--text-2); line-height: 1.65; flex: 1; margin-bottom: 10px;
+      overflow: hidden; display: -webkit-box;
+      -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    }
+    .card-file {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--text-3); margin-bottom: 8px;
+    }
+    .card-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .card-footer {
+      display: flex; align-items: center; gap: 8px;
+      padding-top: 10px; border-top: 1px solid var(--border); margin-top: auto;
+    }
+    .avatar {
+      border-radius: 50%; background: #d9eef9; color: #1a5f8a; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; text-transform: uppercase;
+    }
+
+    /* ── Grid ── */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; }
+
+    /* ── Controls ── */
+    .search-wrap { position: relative; flex: 1; min-width: 180px; }
+    .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
+    .controls { display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+
+    /* ── Inputs ── */
+    input[type="text"], textarea, select {
+      font-family: inherit; font-size: 14px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--surface); color: var(--text);
+      padding: 9px 12px; width: 100%; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input[type="text"]:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(29,110,94,0.12);
+    }
+    .search-input { padding-left: 36px !important; }
+    textarea { resize: vertical; line-height: 1.65; }
+
+    /* ── Pills ── */
+    .pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .pill {
+      padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
+      cursor: pointer; border: 1px solid var(--border); background: transparent;
+      color: var(--text-2); font-family: inherit; transition: all 0.12s;
+    }
+    .pill:hover { border-color: var(--border-hover); }
+    .pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── Form ── */
+    .form-wrap { max-width: 580px; }
+    .form-group { margin-bottom: 1.1rem; }
+    label { display: block; font-size: 13px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .upload-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border: 1px dashed var(--border);
+      border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;
+      color: var(--text-2); transition: all 0.15s; background: transparent; font-family: inherit;
+    }
+    .upload-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .file-chip {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; background: var(--accent-light);
+      border-radius: var(--radius-sm); font-size: 13px; color: var(--accent-text);
+    }
+    .file-chip img { height: 52px; width: 80px; object-fit: cover; border-radius: 6px; }
+    .remove {
+      margin-left: auto; padding: 3px 8px; font-size: 12px;
+      background: transparent; border: 1px solid currentColor;
+      border-radius: 4px; cursor: pointer; font-family: inherit; color: inherit;
+      flex-shrink: 0;
+    }
+    .hint { font-size: 12px; color: var(--text-3); margin-top: 5px; }
+    .error { padding: 10px 14px; border-radius: var(--radius-sm); background: #fdf0f0; color: #b91c1c; font-size: 13px; margin-top: 1rem; }
+    .info-box { padding: 12px 16px; border-radius: var(--radius-sm); background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; font-size: 13px; margin-bottom: 1.5rem; line-height: 1.6; }
+    .info-box a { color: inherit; }
+    .info-box code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+    /* ── Empty / loading ── */
+    .empty { text-align: center; padding: 4rem 2rem; color: var(--text-2); }
+    .empty h3 { font-size: 18px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+    .empty p { font-size: 14px; }
+    .loading { text-align: center; padding: 3rem; color: var(--text-3); font-size: 14px; }
+
+    /* ── Detail ── */
+    .detail-img { width: 100%; max-height: 400px; object-fit: cover; border-radius: var(--radius); display: block; margin-bottom: 1.5rem; }
+    .detail-desc { font-size: 15px; line-height: 1.85; white-space: pre-wrap; color: var(--text); }
+    .attach-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 14px; color: var(--accent); cursor: pointer;
+      background: var(--surface); font-family: inherit; transition: all 0.15s;
+    }
+    .attach-btn:hover { background: var(--accent-light); }
+
+    /* ── Back button ── */
+    .back {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 14px; color: var(--text-2); cursor: pointer;
+      background: none; border: none; font-family: inherit; padding: 0;
+      margin-bottom: 1.5rem; transition: color 0.12s;
+    }
+    .back:hover { color: var(--text); }
+
+    .count { font-size: 13px; color: var(--text-3); margin-bottom: 1rem; }
+
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">
+        <!-- Layers icon -->
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="9,2 16,6 9,10 2,6"/>
+          <polyline points="2,10 9,14 16,10"/>
+        </svg>
+      </div>
+      <span class="logo-text">AI Ideas Board</span>
+    </div>
+    <button class="btn btn-primary" onclick="go('submit')">+ Share an idea</button>
+  </div>
+</header>
+
+<main id="app">
+  <div class="loading">Loading ideas&hellip;</div>
+</main>
+
+<script>
+/* ================================================================
+   CONFIGURATION
+   1. Go to https://console.firebase.google.com
+   2. Create a project → Realtime Database → Start in test mode
+   3. Copy your database URL (looks like the example below)
+   4. Paste it in place of YOUR_DATABASE_URL_HERE
+   ================================================================ */
+const DB = "https://console.firebase.google.com/project/dh-ai-ideas/database/dh-ai-ideas-default-rtdb/data/~2F";
+/*  e.g. "https://my-school-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app"  */
+/* ================================================================ */
+
+/* ── State ── */
+let ideas = {};
+let view = "browse";
+let detailId = null;
+let filter = "All";
+let q = "";
+let submitting = false;
+let formErr = "";
+let form = blank();
+
+function blank() { return { title:"", desc:"", author:"", subject:"", imgUrl:"", file:null }; }
+
+/* ── Firebase helpers ── */
+const isReady = () => DB && DB !== "YOUR_DATABASE_URL_HERE";
+
+async function load() {
+  if (!isReady()) { render(); return; }
+  try {
+    const r = await fetch(DB + "/ideas.json");
+    const data = await r.json();
+    ideas = data && typeof data === "object" ? data : {};
+  } catch(e) { console.error(e); ideas = {}; }
+  render();
+}
+
+async function persist(idea) {
+  const r = await fetch(DB + "/ideas/" + idea.id + ".json", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(idea)
+  });
+  if (!r.ok) throw new Error("Save failed");
+  ideas[idea.id] = idea;
+}
+
+/* ── Helpers ── */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const dateStr = iso => new Date(iso).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" });
+const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function initials(name) {
+  const p = name.split(" ").filter(Boolean);
+  return (p.length >= 2 ? p[0][0] + p[p.length-1][0] : name.slice(0,2)).toUpperCase();
+}
+function avatar(name, size=32) {
+  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.35)}px">${initials(name)}</div>`;
+}
+
+function sorted() { return Object.values(ideas).sort((a,b) => new Date(b.date) - new Date(a.date)); }
+function subjects() { return ["All", ...new Set(sorted().map(i=>i.subject).filter(Boolean))]; }
+function filtered() {
+  const lq = q.toLowerCase();
+  return sorted().filter(i => {
+    const ms = !lq || [i.title,i.desc,i.subject,i.author].some(x => (x||"").toLowerCase().includes(lq));
+    const mf = filter === "All" || i.subject === filter;
+    return ms && mf;
+  });
+}
+
+/* ── Icons (inline SVG strings) ── */
+const iconFile = `<svg width="11" height="13" viewBox="0 0 11 13" fill="none"><path d="M6.5 1H1.5a1 1 0 00-1 1v9a1 1 0 001 1h8a1 1 0 001-1V4L6.5 1z" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 1v3h3" stroke="currentColor" stroke-width="1.2"/></svg>`;
+const iconImg  = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1.5" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="4.5" cy="5.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 10l3-3 2 2 2-3 3 3" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+const iconDl   = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v9M3 7l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 11v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+const iconSearch= `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+
+/* ── Card HTML ── */
+function cardHtml(idea) {
+  const thumb = idea.imgUrl ? `<img class="card-thumb" src="${esc(idea.imgUrl)}" alt="" onerror="this.style.display='none'">` : "";
+  const file  = idea.file   ? `<div class="card-file">${iconFile}<span>${esc(idea.file.name)}</span></div>` : "";
+  return `<div class="card" onclick="go('detail','${idea.id}')">
+    ${thumb}
+    <div class="card-body">
+      <span class="tag">${esc(idea.subject)}</span>
+      <div class="card-title">${esc(idea.title)}</div>
+      <div class="card-desc">${esc(idea.desc)}</div>
+      ${file}
+      <div class="card-footer">
+        ${avatar(idea.author, 26)}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(idea.author)}</div>
+          <div style="font-size:11px;color:var(--text-3)">${dateStr(idea.date)}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Views ── */
+function viewBrowse() {
+  const all = sorted(), vis = filtered(), subs = subjects();
+  const banner = !isReady() ? `<div class="info-box">
+    <strong>Setup needed:</strong> Open <code>ai-ideas-board.html</code> in a text editor and replace
+    <code>YOUR_DATABASE_URL_HERE</code> with your Firebase Realtime Database URL.
+    See the setup guide in this folder, or visit
+    <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>.
+  </div>` : "";
+
+  const controls = all.length > 0 ? `
+    <div class="controls">
+      <div class="search-wrap">
+        ${iconSearch}
+        <input id="sq" type="text" class="search-input" placeholder="Search ideas&hellip;" value="${esc(q)}" oninput="q=this.value;renderGrid()">
+      </div>
+    </div>
+    ${subs.length > 2 ? `<div class="pills" id="pills">${subs.map(s=>`<button class="pill${filter===s?' active':''}" onclick="filter='${s}';renderGrid();renderPills()">${esc(s)}</button>`).join("")}</div>` : ""}` : "";
+
+  let body;
+  if (!isReady()) {
+    body = `<div class="empty"><h3>Almost there!</h3><p>Follow the setup instructions above to connect your database.</p></div>`;
+  } else if (all.length === 0) {
+    body = `<div class="empty"><h3>No ideas yet — be the first!</h3><p>Click "Share an idea" to add yours.</p></div>`;
+  } else if (vis.length === 0) {
+    body = `<div class="empty"><h3>No results</h3><p>Try a different search or filter.</p></div>`;
+  } else {
+    body = `<p class="count" id="cnt">${vis.length} idea${vis.length!==1?"s":""}</p>
+            <div class="grid" id="grid">${vis.map(cardHtml).join("")}</div>`;
+  }
+
+  return `<p style="font-size:14px;color:var(--text-2);margin-bottom:1.5rem">A shared space for AI lesson ideas from our team</p>
+    ${banner}${controls}${body}`;
+}
+
+function renderGrid() {
+  const vis = filtered();
+  const g = document.getElementById("grid");
+  const c = document.getElementById("cnt");
+  if (g) g.innerHTML = vis.map(cardHtml).join("");
+  if (c) c.textContent = vis.length + " idea" + (vis.length!==1?"s":"");
+}
+function renderPills() {
+  const p = document.getElementById("pills");
+  if (p) subjects().forEach((s,i) => {
+    p.children[i] && (p.children[i].className = "pill" + (filter===s?" active":""));
+  });
+}
+
+function viewDetail() {
+  const idea = ideas[detailId];
+  if (!idea) return `<button class="back" onclick="go('browse')">← Back</button><p>Not found.</p>`;
+  const img  = idea.imgUrl ? `<img class="detail-img" src="${esc(idea.imgUrl)}" alt="">` : "";
+  const file = idea.file   ? `<div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+    <p style="font-size:12px;font-weight:500;color:var(--text-3);letter-spacing:.05em;margin-bottom:10px">ATTACHMENT</p>
+    <button class="attach-btn" onclick="dlFile()">${iconDl}&nbsp;${esc(idea.file.name)}</button>
+  </div>` : "";
+
+  return `<button class="back" onclick="go('browse')">← Back to all ideas</button>
+  <div style="max-width:720px">
+    ${img}
+    <span class="tag">${esc(idea.subject)}</span>
+    <h2 style="font-size:24px;font-weight:500;letter-spacing:-.02em;margin:10px 0 1rem;line-height:1.25">${esc(idea.title)}</h2>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)">
+      ${avatar(idea.author, 36)}
+      <div>
+        <div style="font-size:14px;font-weight:500">${esc(idea.author)}</div>
+        <div style="font-size:13px;color:var(--text-2)">${dateStr(idea.date)}</div>
+      </div>
+    </div>
+    <div class="detail-desc">${esc(idea.desc)}</div>
+    ${file}
+  </div>`;
+}
+
+function viewSubmit() {
+  const imgPrev = form.imgUrl
+    ? `<div class="file-chip"><img src="${esc(form.imgUrl)}" alt=""><span style="flex:1;overflow:hidden;text-overflow:ellipsis">Image added</span><button class="remove" onclick="form.imgUrl='';render()">Remove</button></div>`
+    : `<div style="display:flex;flex-direction:column;gap:8px">
+        <button class="upload-btn" onclick="document.getElementById('uImg').click()">${iconImg}&nbsp;Upload an image</button>
+        <input id="uImg" type="file" accept="image/*" style="display:none" onchange="onImg(this)">
+        <div style="display:flex;gap:6px">
+          <input type="text" id="imgUrlInput" placeholder="Or paste an image URL (Google Drive, etc.)" value="${esc(form.imgUrl)}" oninput="form.imgUrl=this.value">
+        </div>
+      </div>`;
+
+  const filePrev = form.file
+    ? `<div class="file-chip">${iconFile}<span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(form.file.name)}</span><button class="remove" onclick="form.file=null;document.getElementById('uFile').value='';render()">Remove</button></div>`
+    : `<div>
+        <button class="upload-btn" onclick="document.getElementById('uFile').click()">${iconFile}&nbsp;Attach a file</button>
+        <input id="uFile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.csv" style="display:none" onchange="onFile(this)">
+        <p class="hint">PDF, Word, PowerPoint, etc. Max 1 MB. For larger files, paste a Google Drive link in the description.</p>
+      </div>`;
+
+  const errH = formErr ? `<div class="error">${esc(formErr)}</div>` : "";
+
+  return `<button class="back" onclick="go('browse');formErr=''">← Back</button>
+  <h2 style="font-size:22px;font-weight:500;letter-spacing:-.02em;margin-bottom:1.5rem">Share an idea</h2>
+  <div class="form-wrap">
+    <div class="form-group">
+      <label>Title *</label>
+      <input type="text" id="fTitle" value="${esc(form.title)}" placeholder="e.g. Using AI to give feedback on student writing" oninput="form.title=this.value">
+    </div>
+    <div class="form-group">
+      <label>Description *</label>
+      <textarea id="fDesc" rows="7" placeholder="Describe the idea, how it works in practice, what went well, any tips for colleagues&hellip;" oninput="form.desc=this.value">${esc(form.desc)}</textarea>
+    </div>
+    <div class="form-group form-row">
+      <div>
+        <label>Subject / area</label>
+        <input type="text" id="fSubject" value="${esc(form.subject)}" placeholder="e.g. English, Maths, SEN" oninput="form.subject=this.value">
+      </div>
+      <div>
+        <label>Your name</label>
+        <input type="text" id="fAuthor" value="${esc(form.author)}" placeholder="Anonymous if left blank" oninput="form.author=this.value">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Image (optional)</label>
+      ${imgPrev}
+    </div>
+    <div class="form-group">
+      <label>Document / file (optional)</label>
+      ${filePrev}
+    </div>
+    ${errH}
+    <div style="margin-top:1.5rem">
+      <button class="btn btn-primary" onclick="submit()" ${submitting?"disabled":""} style="padding:10px 28px;font-size:15px">
+        ${submitting ? "Saving&hellip;" : "Post idea"}
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ── Render ── */
+function render() {
+  const app = document.getElementById("app");
+  if (view === "detail") app.innerHTML = viewDetail();
+  else if (view === "submit") app.innerHTML = viewSubmit();
+  else app.innerHTML = viewBrowse();
+}
+
+function go(v, id) {
+  view = v; detailId = id || null; formErr = "";
+  render();
+  window.scrollTo(0, 0);
+}
+
+/* ── Image resize ── */
+async function resizeToBase64(file) {
+  return new Promise(res => {
+    const fr = new FileReader();
+    fr.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 700;
+        let w = img.width, h = img.height;
+        if (w > h && w > MAX) { h = Math.round(h*MAX/w); w = MAX; }
+        else if (h > MAX) { w = Math.round(w*MAX/h); h = MAX; }
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        res(c.toDataURL("image/jpeg", 0.82));
+      };
+      img.src = e.target.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+async function onImg(input) {
+  const f = input.files[0]; if (!f) return;
+  const data = await resizeToBase64(f);
+  form.imgUrl = data; render();
+}
+
+async function onFile(input) {
+  const f = input.files[0]; if (!f) return;
+  if (f.size > 1.1 * 1024 * 1024) {
+    formErr = "File too large (max 1 MB). Paste a Google Drive or OneDrive link in the description instead.";
+    input.value = ""; render(); return;
+  }
+  const data = await new Promise((res,rej) => {
+    const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.onerror = rej; fr.readAsDataURL(f);
+  });
+  form.file = { name: f.name, data, type: f.type }; formErr = ""; render();
+}
+
+async function submit() {
+  if (!form.title.trim() || !form.desc.trim()) { formErr = "Please add a title and description."; render(); return; }
+  if (!isReady()) { formErr = "Database not configured. See setup instructions above."; render(); return; }
+  submitting = true; formErr = ""; render();
+  try {
+    const idea = {
+      id: uid(),
+      title:   form.title.trim(),
+      desc:    form.desc.trim(),
+      author:  form.author.trim() || "Anonymous",
+      subject: form.subject.trim() || "General",
+      date:    new Date().toISOString(),
+      imgUrl:  form.imgUrl || null,
+      file:    form.file || null,
+    };
+    await persist(idea);
+    form = blank(); submitting = false;
+    go("browse");
+  } catch(e) {
+    formErr = "Couldn't save — check your internet connection, or the idea may be too large. Try removing the attachment.";
+    submitting = false; render();
+  }
+}
+
+function dlFile() {
+  const idea = ideas[detailId];
+  if (!idea?.file) return;
+  const a = document.createElement("a"); a.href = idea.file.data; a.download = idea.file.name; a.click();
+}
+
+/* ── Start ── */
+render();
+load();
+</script>
+</body>
+</html>
