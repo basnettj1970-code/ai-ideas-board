@@ -178,22 +178,22 @@ function loadIdeas(){
 function showBrowse(){renderBrowse();window.scrollTo(0,0);}
 
 function renderBrowse(){
-  var subjects=["All"];
-  ideas.forEach(function(i){if(i.subject&&subjects.indexOf(i.subject)<0)subjects.push(i.subject);});
+  var adminBar=isAdmin?'<div style="margin-bottom:1rem;padding:8px 14px;background:#fef9c3;border-radius:8px;font-size:13px;color:#854d0e;display:flex;align-items:center;gap:10px">'+
+    '<span>🔓 Admin mode — you can edit and delete ideas</span>'+
+    '<button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="logoutAdmin()">Log out</button></div>':"";
 
+  var subjects=["All"].concat(SUBJECTS);
   var subjectPills=subjects.map(function(s){
-    return '<button class="pill'+(filterSubject===s?' active-subject':'')+'" onclick="setSubject(\''+esc(s)+'\')">'+esc(s)+'</button>';
+    var active=filterSubject===s;
+    return '<button class="pill subject-pill'+(active?" active-subject":"")+'" data-val="'+esc(s)+'">'+esc(s)+'</button>';
   }).join("");
 
   var catPills=CATEGORIES.map(function(c){
-    return '<button class="pill'+(filterCategory===c?' active-category':'')+'" onclick="setCategory(\''+esc(c)+'\')">'+esc(c)+'</button>';
+    var active=filterCategory===c;
+    return '<button class="pill cat-pill'+(active?" active-category":"")+'" data-val="'+esc(c)+'">'+esc(c)+'</button>';
   }).join("");
 
-  var adminBar = isAdmin ? '<div style="margin-bottom:1rem;padding:8px 14px;background:#fef9c3;border-radius:8px;font-size:13px;color:#854d0e;display:flex;align-items:center;gap:10px">'+
-    '<span>🔓 Admin mode — you can edit and delete ideas</span>'+
-    '<button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="logoutAdmin()">Log out</button></div>' : "";
-
-  document.getElementById("main").innerHTML =
+  document.getElementById("main").innerHTML=
     adminBar+
     '<p style="font-size:14px;color:#5c5c58;margin-bottom:1.25rem">A shared space for AI lesson ideas from our team</p>'+
     '<div class="search-wrap">'+
@@ -202,16 +202,42 @@ function renderBrowse(){
     '</div>'+
     '<div style="margin-bottom:.75rem">'+
       '<div style="font-size:12px;font-weight:500;color:#969690;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Subject</div>'+
-      '<div class="filter-group" id="subjectPills">'+subjectPills+'</div>'+
+      '<div id="subjectPills" style="display:flex;gap:5px;flex-wrap:wrap">'+subjectPills+'</div>'+
     '</div>'+
     '<div style="margin-bottom:1.25rem">'+
       '<div style="font-size:12px;font-weight:500;color:#969690;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Type of AI use</div>'+
-      '<div class="filter-group" id="catPills">'+catPills+'</div>'+
+      '<div id="catPills" style="display:flex;gap:5px;flex-wrap:wrap">'+catPills+'</div>'+
     '</div>'+
     '<p id="countLine" style="font-size:13px;color:#969690;margin-bottom:1rem"></p>'+
     '<div id="results"></div>';
 
-  document.getElementById("searchBox").addEventListener("input",function(){searchVal=this.value;renderResults();});
+  // Search
+  document.getElementById("searchBox").addEventListener("input",function(){
+    searchVal=this.value; renderResults();
+  });
+
+  // Subject pills — event delegation
+  document.getElementById("subjectPills").addEventListener("click",function(e){
+    var btn=e.target.closest(".subject-pill");
+    if(!btn)return;
+    filterSubject=btn.dataset.val;
+    Array.from(this.querySelectorAll(".subject-pill")).forEach(function(b){
+      b.className="pill subject-pill"+(b.dataset.val===filterSubject?" active-subject":"");
+    });
+    renderResults();
+  });
+
+  // Category pills — event delegation
+  document.getElementById("catPills").addEventListener("click",function(e){
+    var btn=e.target.closest(".cat-pill");
+    if(!btn)return;
+    filterCategory=btn.dataset.val;
+    Array.from(this.querySelectorAll(".cat-pill")).forEach(function(b){
+      b.className="pill cat-pill"+(b.dataset.val===filterCategory?" active-category":"");
+    });
+    renderResults();
+  });
+
   renderResults();
 }
 
@@ -223,25 +249,13 @@ function renderResults(){
     var mc=filterCategory==="All types"||i.category===filterCategory;
     return mq&&ms&&mc;
   });
-
   var html=visible.length===0
-    ?'<div class="empty"><h3>'+(ideas.length===0?'No ideas yet — be the first!':'No results')+'</h3><p>'+(ideas.length===0?'Click "+ Share an idea" to add yours.':'Try adjusting your search or filters.')+'</p></div>'
+    ?'<div class="empty"><h3>'+(ideas.length===0?'No ideas yet — be the first!':'No results')+'</h3><p>'+(ideas.length===0?'Click “+ Share an idea” to add yours.':'Try adjusting your search or filters.')+'</p></div>'
     :'<div class="grid">'+visible.map(cardHtml).join("")+'</div>';
-
   var c=document.getElementById("countLine");
   var r=document.getElementById("results");
   if(c)c.textContent=visible.length+' idea'+(visible.length!==1?'s':'');
   if(r)r.innerHTML=html;
-
-  // update pill highlights
-  var sp=document.getElementById("subjectPills");
-  if(sp)Array.from(sp.querySelectorAll(".pill")).forEach(function(b){
-    b.className="pill"+(b.textContent.trim()===filterSubject?" active-subject":"");
-  });
-  var cp=document.getElementById("catPills");
-  if(cp)Array.from(cp.querySelectorAll(".pill")).forEach(function(b){
-    b.className="pill"+(b.textContent.trim()===filterCategory?" active-category":"");
-  });
 }
 
 function setSubject(v){filterSubject=v;renderResults();}
