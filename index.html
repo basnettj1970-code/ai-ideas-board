@@ -239,7 +239,7 @@
    3. Copy your database URL (looks like the example below)
    4. Paste it in place of YOUR_DATABASE_URL_HERE
    ================================================================ */
-const DB = "https://dh-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app";
+const DB = "YOUR_DATABASE_URL_HERE";
 /*  e.g. "https://my-school-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app"  */
 /* ================================================================ */
 
@@ -519,18 +519,24 @@ async function onFile(input) {
 }
 
 async function submit() {
-  if (!form.title.trim() || !form.desc.trim()) { formErr = "Please add a title and description."; render(); return; }
+  var title   = (document.getElementById("fTitle")   ? document.getElementById("fTitle").value   : form.title).trim();
+  var desc    = (document.getElementById("fDesc")    ? document.getElementById("fDesc").value    : form.desc).trim();
+  var author  = (document.getElementById("fAuthor")  ? document.getElementById("fAuthor").value  : form.author).trim();
+  var subject = (document.getElementById("fSubject") ? document.getElementById("fSubject").value : form.subject).trim();
+  var imgUrl  = (document.getElementById("imgUrlInput") ? document.getElementById("imgUrlInput").value : form.imgUrl) || form.imgUrl || "";
+
+  if (!title || !desc) { formErr = "Please add a title and description."; render(); return; }
   if (!isReady()) { formErr = "Database not configured. See setup instructions above."; render(); return; }
   submitting = true; formErr = ""; render();
   try {
     const idea = {
-      id: uid(),
-      title:   form.title.trim(),
-      desc:    form.desc.trim(),
-      author:  form.author.trim() || "Anonymous",
-      subject: form.subject.trim() || "General",
+      id:      uid(),
+      title:   title,
+      desc:    desc,
+      author:  author || "Anonymous",
+      subject: subject || "General",
       date:    new Date().toISOString(),
-      imgUrl:  form.imgUrl || null,
+      imgUrl:  imgUrl || null,
       file:    form.file || null,
     };
     await persist(idea);
