@@ -239,19 +239,19 @@
    3. Copy your database URL (looks like the example below)
    4. Paste it in place of YOUR_DATABASE_URL_HERE
    ================================================================ */
-const DB = "https://console.firebase.google.com/project/dh-ai-ideas/database/dh-ai-ideas-default-rtdb/data/~2F";
+const DB = " https://dh-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app";
 /*  e.g. "https://my-school-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app"  */
 /* ================================================================ */
 
 /* ── State ── */
-let ideas = {};
-let view = "browse";
-let detailId = null;
-let filter = "All";
-let q = "";
-let submitting = false;
-let formErr = "";
-let form = blank();
+var ideas = {};
+var view = "browse";
+var detailId = null;
+var filter = "All";
+var q = "";
+var submitting = false;
+var formErr = "";
+var form = blank();
 
 function blank() { return { title:"", desc:"", author:"", subject:"", imgUrl:"", file:null }; }
 
