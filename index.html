@@ -237,7 +237,7 @@
    1. Go to https://console.firebase.google.com
    2. Create a project → Realtime Database → Start in test mode
    3. Copy your database URL (looks like the example below)
-   4. Paste it in place of YOUR_DATABASE_URL_HERE
+   4. Paste it in place of https://dh-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app
    ================================================================ */
 const DB = "https://dh-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app";
 /*  e.g. "https://my-school-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app"  */
@@ -256,7 +256,7 @@ var form = blank();
 function blank() { return { title:"", desc:"", author:"", subject:"", imgUrl:"", file:null }; }
 
 /* ── Firebase helpers ── */
-const isReady = () => DB && DB !== "YOUR_DATABASE_URL_HERE";
+const isReady = () => !!DB;
 
 async function load() {
   if (!isReady()) { render(); return; }
@@ -335,7 +335,7 @@ function viewBrowse() {
   const all = sorted(), vis = filtered(), subs = subjects();
   const banner = !isReady() ? `<div class="info-box">
     <strong>Setup needed:</strong> Open <code>ai-ideas-board.html</code> in a text editor and replace
-    <code>YOUR_DATABASE_URL_HERE</code> with your Firebase Realtime Database URL.
+    <code>https://dh-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app</code> with your Firebase Realtime Database URL.
     See the setup guide in this folder, or visit
     <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>.
   </div>` : "";
@@ -554,9 +554,4 @@ function dlFile() {
   const a = document.createElement("a"); a.href = idea.file.data; a.download = idea.file.name; a.click();
 }
 
-/* ── Start ── */
-render();
-load();
-</script>
-</body>
-</html>
+/* ── S
