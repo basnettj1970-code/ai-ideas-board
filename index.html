@@ -362,6 +362,11 @@ function showSubmit(editId){
       '</div>'+
       '<div class="form-group"><label>Your name</label>'+
         '<input type="text" id="fAuthor" placeholder="Anonymous if left blank" value="'+esc(editing?editing.author:'')+'"></div>'+
+      '<div class="form-group">'+
+        '<label>Personal edit PIN <span style="font-weight:400;color:#969690">(optional — lets you edit this idea later)</span></label>'+
+        '<input type="password" id="fPin" placeholder="Choose a word or number you\'ll remember" value="">'+
+        '<p class="hint">Keep this private. You\'ll need it to edit your idea in future. Leave blank if you don\'t need to edit.</p>'+
+      '</div>'+
       '<div class="form-group"><label>Image (optional)</label><div id="imgArea">'+imgArea+'</div></div>'+
       '<div class="form-group"><label>File / document (optional)</label><div id="fileArea">'+fileArea+'</div></div>'+
       '<div id="errBox"></div>'+
@@ -443,6 +448,8 @@ function doSubmit(){
   document.getElementById("errBox").innerHTML="";
 
   var existing=editId?ideas.find(function(i){return i.id===editId;}):null;
+  var pinEl=document.getElementById("fPin");
+  var pin=pinEl?pinEl.value.trim():"";
   var idea={
     id:editId||uid(),
     title:title,desc:desc,
@@ -451,7 +458,8 @@ function doSubmit(){
     category:category||"",
     date:existing?existing.date:new Date().toISOString(),
     imgUrl:imgData||null,
-    file:fileData?{name:fileInfo.name,type:fileInfo.type,data:fileData}:null
+    file:fileData?{name:fileInfo.name,type:fileInfo.type,data:fileData}:null,
+    pin:pin||(existing?existing.pin||"":"")
   };
 
   fbSave(idea).then(function(){
@@ -474,6 +482,48 @@ function deleteIdea(id){
     ideas=ideas.filter(function(i){return i.id!==id;});
     showBrowse();
   }).catch(function(){alert("Could not delete. Please try again.");});
+}
+
+// ── User PIN edit ────────────────────────────────────────────────
+function promptUserEdit(id){
+  var idea=ideas.find(function(i){return i.id===id;});
+  if(!idea)return;
+  // Show PIN modal
+  var overlay=document.createElement("div");
+  overlay.className="modal-overlay";
+  overlay.id="pinModal";
+  overlay.innerHTML=
+    '<div class="modal">'+
+      '<h3>Edit your idea</h3>'+
+      '<p>Enter the PIN you set when you posted this idea.</p>'+
+      '<input type="password" id="pinInput" placeholder="Your PIN" style="margin-bottom:8px">'+
+      '<div id="pinErr" style="color:#b91c1c;font-size:13px;margin-bottom:8px"></div>'+
+      '<div style="display:flex;gap:8px">'+
+        '<button class="btn btn-green" style="flex:1" onclick="checkPin(''+id+'')">Confirm</button>'+
+        '<button class="btn btn-outline" onclick="document.getElementById('pinModal').remove()">Cancel</button>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(overlay);
+  setTimeout(function(){document.getElementById("pinInput").focus();},50);
+  document.getElementById("pinInput").addEventListener("keydown",function(e){
+    if(e.key==="Enter")checkPin(id);
+  });
+  overlay.addEventListener("click",function(e){
+    if(e.target===overlay)overlay.remove();
+  });
+}
+
+function checkPin(id){
+  var idea=ideas.find(function(i){return i.id===id;});
+  if(!idea)return;
+  var entered=document.getElementById("pinInput").value.trim();
+  if(entered===idea.pin){
+    document.getElementById("pinModal").remove();
+    editIdea(id);
+  } else {
+    document.getElementById("pinErr").textContent="Incorrect PIN. Please try again.";
+    document.getElementById("pinInput").select();
+  }
 }
 
 // ── Admin ───────────────────────────────────────────────────────
