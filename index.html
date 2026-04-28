@@ -69,6 +69,20 @@ textarea{resize:vertical;line-height:1.65}
 .modal p{font-size:13px;color:#5c5c58;margin-bottom:1rem;line-height:1.5}
 .admin-bar{margin-bottom:1rem;padding:8px 14px;background:#fef9c3;border-radius:8px;font-size:13px;color:#854d0e;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 @media(max-width:500px){.form-row{grid-template-columns:1fr}}
+.reaction-bar{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.react-btn{font-family:inherit;font-size:12px;font-weight:500;padding:5px 10px;border-radius:20px;cursor:pointer;border:1px solid #e0e0db;background:#fff;color:#5c5c58;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
+.react-btn:hover{border-color:#aaa;background:#f5f5f2}
+.react-btn.liked{background:#fef9c3;border-color:#fcd34d;color:#92400e}
+.react-btn.tried{background:#dcfce7;border-color:#86efac;color:#166534}
+.share-btn{font-family:inherit;font-size:12px;padding:5px 10px;border-radius:20px;cursor:pointer;border:1px solid #e0e0db;background:#fff;color:#5c5c58;display:inline-flex;align-items:center;gap:4px;transition:all .15s;margin-left:auto}
+.share-btn:hover{border-color:#aaa;background:#f5f5f2}
+.sort-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.sort-label{font-size:12px;font-weight:500;color:#969690;white-space:nowrap}
+.sort-btn{font-family:inherit;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;cursor:pointer;border:1px solid #e0e0db;background:transparent;color:#5c5c58;transition:all .12s}
+.sort-btn:hover{border-color:#aaa}
+.sort-btn.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;font-size:13px;padding:10px 20px;border-radius:20px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -147,6 +161,7 @@ var imgData = null;
 var fileData = null;
 var fileInfo = null;
 var pendingPinId = null;
+var sortBy = 'newest';
 
 // ── Firebase ─────────────────────────────────────────────────────
 function fbGet() {
@@ -183,6 +198,7 @@ function loadIdeas() {
       ideas.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
     }
     renderBrowse();
+    checkUrlForIdea();
   }).catch(function() {
     ideas = [];
     renderBrowse();
@@ -214,6 +230,12 @@ function renderBrowse() {
     '</div>' +
     '<div class="filter-row"><div class="filter-label">Subject</div><div class="pill-wrap" id="sPills">' + subjectPills + '</div></div>' +
     '<div class="filter-row" style="margin-bottom:1.25rem"><div class="filter-label">Type of AI use</div><div class="pill-wrap" id="cPills">' + catPills + '</div></div>' +
+    '<div class="sort-bar">' +
+      '<span class="sort-label">Sort by:</span>' +
+      '<button class="sort-btn' + (sortBy==='newest'?' active':'') + '" data-sort="newest">Newest</button>' +
+      '<button class="sort-btn' + (sortBy==='liked'?' active':'') + '" data-sort="liked">&#128077; Most liked</button>' +
+      '<button class="sort-btn' + (sortBy==='tried'?' active':'') + '" data-sort="tried">&#10003; Most tried</button>' +
+    '</div>' +
     '<p id="countLine" style="font-size:13px;color:#969690;margin-bottom:1rem"></p>' +
     '<div id="results"></div>';
 
@@ -239,6 +261,15 @@ function renderBrowse() {
     });
     renderResults();
   });
+  document.querySelector(".sort-bar").addEventListener("click", function(e) {
+    var b = e.target.closest(".sort-btn");
+    if (!b) return;
+    sortBy = b.dataset.sort;
+    Array.from(this.querySelectorAll(".sort-btn")).forEach(function(x) {
+      x.className = "sort-btn" + (x.dataset.sort === sortBy ? " active" : "");
+    });
+    renderResults();
+  });
   renderResults();
 }
 
@@ -252,6 +283,11 @@ function renderResults() {
     var mc = filterCategory === "All types" || i.category === filterCategory;
     return mq && ms && mc;
   });
+  if (sortBy === "liked") {
+    visible.sort(function(a, b) { return (b.likes || 0) - (a.likes || 0); });
+  } else if (sortBy === "tried") {
+    visible.sort(function(a, b) { return (b.tried || 0) - (a.tried || 0); });
+  }
   var c = document.getElementById("countLine");
   var r = document.getElementById("results");
   if (c) c.textContent = visible.length + " idea" + (visible.length !== 1 ? "s" : "");
@@ -289,6 +325,11 @@ function cardHtml(idea) {
     '<div><div style="font-size:12px;font-weight:500">' + esc(idea.author || "Anonymous") + "</div>" +
     '<div style="font-size:11px;color:#969690">' + fmtDate(idea.date) + "</div></div>" +
     "</div>" +
+    '<div class="reaction-bar">' +
+      '<button class="react-btn liked" onclick="event.stopPropagation();reactTo(\''+idea.id+'\',\'likes\')" title="Like this idea">&#128077; ' + (idea.likes || 0) + '</button>' +
+      '<button class="react-btn tried" onclick="event.stopPropagation();reactTo(\''+idea.id+'\',\'tried\')" title="I tried this!">&#10003; ' + (idea.tried || 0) + ' tried</button>' +
+      '<button class="share-btn" onclick="event.stopPropagation();shareIdea(\''+idea.id+'\')" title="Copy link">&#128279; Share</button>' +
+    '</div>' +
     editBtns +
     "</div></div>";
 }
@@ -520,6 +561,52 @@ function deleteIdea(id) {
   }).catch(function() { alert("Could not delete. Please try again."); });
 }
 
+// ── Reactions ────────────────────────────────────────────────────
+function reactTo(id, field) {
+  var idea = ideas.find(function(i) { return i.id === id; });
+  if (!idea) return;
+  idea[field] = (idea[field] || 0) + 1;
+  fbSave(idea).then(function() {
+    renderResults();
+  }).catch(function() {
+    idea[field] = (idea[field] || 1) - 1;
+  });
+}
+
+function shareIdea(id) {
+  var url = window.location.href.split('?')[0] + '?idea=' + id;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function() {
+      showToast("Link copied to clipboard!");
+    });
+  } else {
+    var inp = document.createElement("input");
+    inp.value = url;
+    document.body.appendChild(inp);
+    inp.select();
+    document.execCommand("copy");
+    document.body.removeChild(inp);
+    showToast("Link copied to clipboard!");
+  }
+}
+
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function() { t.classList.remove("show"); }, 2500);
+}
+
+// Handle direct idea link on load
+function checkUrlForIdea() {
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get("idea");
+  if (id) {
+    var idea = ideas.find(function(i) { return i.id === id; });
+    if (idea) showDetail(id);
+  }
+}
+
 // ── PIN modal ────────────────────────────────────────────────────
 function openPinModal(id) {
   pendingPinId = id;
@@ -588,5 +675,6 @@ function logoutAdmin() {
 document.getElementById("shareBtn").addEventListener("click", function() { showSubmit(null); });
 loadIdeas();
 </script>
+<div class="toast" id="toast"></div>
 </body>
 </html>
