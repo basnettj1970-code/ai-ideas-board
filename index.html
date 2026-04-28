@@ -297,12 +297,21 @@ function cardHtml(idea) {
 function showDetail(id) {
   var idea = ideas.find(function(i) { return i.id === id; });
   if (!idea) { showBrowse(); return; }
-  var img = idea.imgUrl ? '<img class="detail-img" src="' + esc(idea.imgUrl) + '" alt="">' : "";
-  var fileBtn = idea.file
-    ? '<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea">' +
-      '<p style="font-size:12px;font-weight:500;color:#969690;margin-bottom:8px;letter-spacing:.05em">ATTACHMENT</p>' +
-      '<button class="btn btn-outline" onclick="dlFile(\'' + id + '\')">&#11015; ' + esc(idea.file.name) + "</button></div>"
+  var img = idea.imgUrl
+    ? '<a href="' + esc(idea.imgUrl) + '" target="_blank" title="Click to open full size">' +
+      '<img class="detail-img" src="' + esc(idea.imgUrl) + '" alt="" style="cursor:zoom-in"></a>'
     : "";
+  var fileBtn = "";
+  if (idea.file) {
+    var isPdf = idea.file.name.toLowerCase().endsWith(".pdf");
+    var fileButtons = isPdf
+      ? '<button class="btn btn-outline" style="margin-right:8px" onclick="openFile(\''+id+'\')">&#128196; Open PDF</button>' +
+        '<button class="btn btn-outline" onclick="dlFile(\''+id+'\')">&#11015; Download</button>'
+      : '<button class="btn btn-outline" onclick="dlFile(\''+id+'\')">&#11015; Download '+esc(idea.file.name)+'</button>';
+    fileBtn = '<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea">' +
+      '<p style="font-size:12px;font-weight:500;color:#969690;margin-bottom:8px;letter-spacing:.05em">ATTACHMENT</p>' +
+      fileButtons + '</div>';
+  }
   var adminBtns = "";
   if (isAdmin) {
     adminBtns = '<div style="display:flex;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea">' +
@@ -338,6 +347,12 @@ function dlFile(id) {
   a.href = idea.file.data;
   a.download = idea.file.name;
   a.click();
+}
+function openFile(id) {
+  var idea = ideas.find(function(i) { return i.id === id; });
+  if (!idea || !idea.file) return;
+  var win = window.open();
+  win.document.write('<iframe src="' + idea.file.data + '" style="width:100%;height:100vh;border:none"></iframe>');
 }
 
 // ── Submit / Edit view ───────────────────────────────────────────
