@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Operational Preloader</title>
+<style>
+body{font-family:sans-serif;max-width:600px;margin:4rem auto;padding:1rem;text-align:center}
+h1{font-size:20px;margin-bottom:1rem}
+p{color:#555;margin-bottom:1.5rem;font-size:14px}
+button{font-family:inherit;font-size:15px;padding:12px 28px;background:#1e40af;color:#fff;border:none;border-radius:8px;cursor:pointer}
+button:hover{background:#1e3a8a}
+button:disabled{opacity:.5;cursor:not-allowed}
+#log{margin-top:1.5rem;text-align:left;font-size:13px;line-height:1.9}
+.ok{color:#166534}.err{color:#b91c1c}
+</style>
+</head>
+<body>
+<h1>🏢 Operational Ideas — Preloader</h1>
+<p>Click the button to upload 6 operational staff ideas to Firebase.<br><strong>Only do this once</strong>, then delete this file from GitHub.</p>
+<button id="btn" onclick="run()">Upload operational ideas</button>
+<div id="log"></div>
+<script>
+var DB = "https://dh-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app";
+var IDEAS = {
+  "9gdw97oj": {
+    "id": "9gdw97oj",
+    "title": "Writing job advertisements",
+    "desc": "Provide AI with the job title, key responsibilities, required qualifications and school ethos, and ask it to produce a compelling job advertisement. AI can quickly generate multiple tone options \u2014 formal, conversational \u2014 so you can choose what fits best.",
+    "author": "HR",
+    "subject": "HR & Staffing",
+    "category": "Communication",
+    "date": "2025-02-01T00:00:00Z",
+    "imgUrl": null,
+    "file": null,
+    "likes": 0,
+    "tried": 0,
+    "pin": ""
+  },
+  "0ulsjzs0": {
+    "id": "0ulsjzs0",
+    "title": "Writing social media posts from existing content",
+    "desc": "Paste a newsletter article, event summary or news item into AI and ask it to produce shorter versions suitable for different social media platforms \u2014 Twitter/X, LinkedIn, Instagram. AI adapts tone and length appropriately for each channel.",
+    "author": "Marketing",
+    "subject": "Marketing & Communications",
+    "category": "Communication",
+    "date": "2025-02-04T00:00:00Z",
+    "imgUrl": null,
+    "file": null,
+    "likes": 0,
+    "tried": 0,
+    "pin": ""
+  },
+  "lju723ix": {
+    "id": "lju723ix",
+    "title": "Chasing outstanding invoices politely",
+    "desc": "Use AI to draft a series of escalating but professional payment reminder emails for outstanding invoices \u2014 from a gentle first reminder through to a firmer final notice. Adjust tone as needed before sending.",
+    "author": "Finance Team",
+    "subject": "Finance",
+    "category": "Email Drafting",
+    "date": "2025-02-07T00:00:00Z",
+    "imgUrl": null,
+    "file": null,
+    "likes": 0,
+    "tried": 0,
+    "pin": ""
+  },
+  "v5em9k8x": {
+    "id": "v5em9k8x",
+    "title": "Drafting governor reports",
+    "desc": "Use AI to help structure and draft termly governor reports. Provide bullet points of key data, achievements and challenges, and ask AI to write them up in a formal report style. AI is particularly good at ensuring a consistent tone and logical flow across long documents.",
+    "author": "SLT",
+    "subject": "Senior Leadership",
+    "category": "Report Writing",
+    "date": "2025-02-10T00:00:00Z",
+    "imgUrl": null,
+    "file": null,
+    "likes": 0,
+    "tried": 0,
+    "pin": ""
+  },
+  "0dgk8b2x": {
+    "id": "0dgk8b2x",
+    "title": "Drafting offer and decline letters",
+    "desc": "Use AI to draft personalised offer and decline letters for prospective pupils. Provide the key details (name, outcome, next steps) and ask AI to write in a warm, professional tone consistent with the school's voice. Always review and personalise before sending.",
+    "author": "Admissions Team",
+    "subject": "Admissions",
+    "category": "Letter Writing",
+    "date": "2025-02-13T00:00:00Z",
+    "imgUrl": null,
+    "file": null,
+    "likes": 0,
+    "tried": 0,
+    "pin": ""
+  },
+  "85ssvwzz": {
+    "id": "85ssvwzz",
+    "title": "Writing plain-English IT guidance for staff",
+    "desc": "Describe a technical process or policy and ask AI to rewrite it in clear, jargon-free language suitable for non-technical staff. Particularly useful for IT policies, password guidance, phishing awareness and software how-to guides.",
+    "author": "IT Department",
+    "subject": "IT",
+    "category": "Communication",
+    "date": "2025-02-16T00:00:00Z",
+    "imgUrl": null,
+    "file": null,
+    "likes": 0,
+    "tried": 0,
+    "pin": ""
+  }
+};
+async function run(){
+  var btn=document.getElementById("btn");
+  var log=document.getElementById("log");
+  btn.disabled=true; btn.textContent="Uploading...";
+  var ids=Object.keys(IDEAS); var ok=0,fail=0;
+  for(var i=0;i<ids.length;i++){
+    var idea=IDEAS[ids[i]];
+    log.innerHTML+="Uploading: <em>"+idea.title+"</em>...<br>";
+    try{
+      var r=await fetch(DB+"/op-ideas/"+idea.id+".json",{
+        method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(idea)
+      });
+      if(r.ok){ok++;}else{fail++;log.innerHTML+='<span class="err">✗ Failed</span><br>';}
+    }catch(e){fail++;log.innerHTML+='<span class="err">✗ Error: '+e.message+'</span><br>';}
+    window.scrollTo(0,document.body.scrollHeight);
+  }
+  log.innerHTML+='<br><strong class="'+(fail===0?'ok':'err')+'">Done! '+ok+' uploaded, '+fail+' failed.</strong><br>';
+  if(fail===0)log.innerHTML+='<span class="ok">All done! Delete this file from GitHub.</span>';
+  btn.textContent="Complete";
+}
+</script>
+</body>
+</html>
