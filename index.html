@@ -106,8 +106,8 @@ textarea{resize:vertical;line-height:1.65}
     </div>
   </div>
   <div class="section-switcher">
-    <button class="switcher-btn active" id="btnAcademic" onclick="switchSection('academic')">&#127891; Academic Staff</button>
-    <button class="switcher-btn" id="btnOperational" onclick="switchSection('operational')">&#127970; Operational Staff</button>
+    <button class="switcher-btn active" id="btnAcademic" data-sec="academic">&#127891; Academic Staff</button>
+    <button class="switcher-btn" id="btnOperational" data-sec="operational">&#127970; Operational Staff</button>
   </div>
 </header>
 
@@ -119,7 +119,7 @@ textarea{resize:vertical;line-height:1.65}
     <div id="adminPwErr" style="color:#b91c1c;font-size:13px;margin-bottom:8px;min-height:20px"></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-green" style="flex:1" id="adminLoginBtn">Log in</button>
-      <button class="btn btn-outline" onclick="closeAdminModal()">Cancel</button>
+      <button class="btn btn-outline" id="adminCancelBtn">Cancel</button>
     </div>
   </div>
 </div>
@@ -132,7 +132,7 @@ textarea{resize:vertical;line-height:1.65}
     <div id="pinErr" style="color:#b91c1c;font-size:13px;margin-bottom:8px;min-height:20px"></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-green" style="flex:1" id="pinConfirmBtn">Confirm</button>
-      <button class="btn btn-outline" onclick="closePinModal()">Cancel</button>
+      <button class="btn btn-outline" id="pinCancelBtn">Cancel</button>
     </div>
   </div>
 </div>
@@ -155,7 +155,6 @@ var isAdmin = false;
 var fSub = "All", fCat = "All types", fQ = "", fSort = "newest";
 var imgData = null, fileData = null, fileInfo = null, pendingPin = null;
 
-// Firebase
 function fbGet(s){return fetch(DB+(s==="academic"?"/ideas":"/op-ideas")+".json").then(function(r){return r.json();});}
 function fbSave(s,idea){
   return fetch(DB+(s==="academic"?"/ideas":"/op-ideas")+"/"+idea.id+".json",{
@@ -167,7 +166,6 @@ function fbDel(s,id){
     .then(function(r){if(!r.ok)throw new Error("fail");});
 }
 
-// Helpers
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function fmtDate(iso){return new Date(iso).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});}
 function ini(name){var p=(name||"A").trim().split(" ").filter(Boolean);return(p.length>=2?p[0][0]+p[p.length-1][0]:(name||"A").slice(0,2)).toUpperCase();}
@@ -181,6 +179,7 @@ function avCls(){return sec==="academic"?"av-a":"av-o";}
 function psCls(){return sec==="academic"?"psa":"pso";}
 function pcCls(){return sec==="academic"?"pca":"pco";}
 function btnCls(){return sec==="academic"?"btn-green":"btn-blue";}
+function chipCls(){return sec==="academic"?"fc-a":"fc-o";}
 function secDesc(){
   return sec==="academic"
     ?"The AI Ideas Board is a place for colleagues to share ideas for AI use — whether for your own admin and resource creation, or for activities undertaken in the classroom. Browse what others are trying, add your own ideas, and help build a shared picture of AI across Downe House."
@@ -210,41 +209,51 @@ function switchSection(s){
   renderBrowse();
 }
 
+document.getElementById("btnAcademic").addEventListener("click",function(){switchSection("academic");});
+document.getElementById("btnOperational").addEventListener("click",function(){switchSection("operational");});
+
 function showBrowse(){renderBrowse();window.scrollTo(0,0);}
 
 function renderBrowse(){
   var ps=psCls(), pc=pcCls();
   var subs=["All"].concat(curSubjects());
-  var sPills=subs.map(function(s){return '<button class="pill'+(fSub===s?" "+ps:"")+'" data-s="'+esc(s)+'">'+esc(s)+'</button>';}).join("");
+  var sPills=subs.map(function(s){
+    return "<button class='pill"+(fSub===s?" "+ps:"")+"' data-s='"+s+"'>"+esc(s)+"</button>";
+  }).join("");
   var cats=["All types"].concat(curCats());
-  var cPills=cats.map(function(c){return '<button class="pill'+(fCat===c?" "+pc:"")+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';}).join("");
-  var adminBar=isAdmin?'<div class="admin-bar"><span>&#128275; Admin mode &mdash; you can edit and delete any idea</span><button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="logoutAdmin()">Log out</button></div>':"";
+  var cPills=cats.map(function(c){
+    return "<button class='pill"+(fCat===c?" "+pc:"")+"' data-c='"+c+"'>"+esc(c)+"</button>";
+  }).join("");
+  var adminBar=isAdmin?"<div class='admin-bar'><span>&#128275; Admin mode &mdash; you can edit and delete any idea</span><button class='btn btn-outline btn-sm' id='logoutBtn' style='margin-left:auto'>Log out</button></div>":"";
 
   document.getElementById("main").innerHTML=
     adminBar+
-    '<p style="font-size:14px;color:#5c5c58;margin-bottom:1.25rem;line-height:1.7">'+secDesc()+'</p>'+
-    '<div class="search-wrap"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'+
-    '<input id="searchBox" class="search-input" placeholder="Search by title, description, subject or author..." value="'+esc(fQ)+'"></div>'+
-    '<div class="filter-row"><div class="filter-label">'+( sec==="academic"?"Subject":"Department")+'</div><div class="pill-wrap" id="sPills">'+sPills+'</div></div>'+
-    '<div class="filter-row" style="margin-bottom:1.25rem"><div class="filter-label">Type of AI use</div><div class="pill-wrap" id="cPills">'+cPills+'</div></div>'+
-    '<div class="sort-bar"><span class="sort-lbl">Sort by:</span>'+
-    '<button class="sort-btn'+(fSort==="newest"?" active":"")+'" data-sort="newest">Newest</button>'+
-    '<button class="sort-btn'+(fSort==="liked"?" active":"")+'" data-sort="liked">&#128077; Most liked</button>'+
-    '<button class="sort-btn'+(fSort==="tried"?" active":"")+'" data-sort="tried">&#10003; Most tried</button>'+
-    '</div>'+
-    '<p id="cntLine" style="font-size:13px;color:#969690;margin-bottom:1rem"></p>'+
-    '<div id="results"></div>';
+    "<p style='font-size:14px;color:#5c5c58;margin-bottom:1.25rem;line-height:1.7'>"+secDesc()+"</p>"+
+    "<div class='search-wrap'><svg width='14' height='14' viewBox='0 0 14 14' fill='none'><circle cx='6' cy='6' r='5' stroke='currentColor' stroke-width='1.4'/><path d='M10 10l3 3' stroke='currentColor' stroke-width='1.4' stroke-linecap='round'/></svg>"+
+    "<input id='searchBox' class='search-input' placeholder='Search by title, description, subject or author...' value='"+esc(fQ)+"'></div>"+
+    "<div class='filter-row'><div class='filter-label'>"+(sec==="academic"?"Subject":"Department")+"</div><div class='pill-wrap' id='sPills'>"+sPills+"</div></div>"+
+    "<div class='filter-row' style='margin-bottom:1.25rem'><div class='filter-label'>Type of AI use</div><div class='pill-wrap' id='cPills'>"+cPills+"</div></div>"+
+    "<div class='sort-bar'><span class='sort-lbl'>Sort by:</span>"+
+    "<button class='sort-btn"+(fSort==="newest"?" active":"")+"' data-sort='newest'>Newest</button>"+
+    "<button class='sort-btn"+(fSort==="liked"?" active":"")+"' data-sort='liked'>&#128077; Most liked</button>"+
+    "<button class='sort-btn"+(fSort==="tried"?" active":"")+"' data-sort='tried'>&#10003; Most tried</button>"+
+    "</div>"+
+    "<p id='cntLine' style='font-size:13px;color:#969690;margin-bottom:1rem'></p>"+
+    "<div id='results'></div>";
 
+  if(isAdmin){
+    var lb=document.getElementById("logoutBtn");
+    if(lb)lb.addEventListener("click",logoutAdmin);
+  }
   document.getElementById("searchBox").addEventListener("input",function(){fQ=this.value;renderResults();});
-
   document.getElementById("sPills").addEventListener("click",function(e){
-    var b=e.target.closest(".pill");if(!b)return;
+    var b=e.target.closest(".pill");if(!b||!b.dataset.s)return;
     fSub=b.dataset.s;
     Array.from(this.querySelectorAll(".pill")).forEach(function(x){x.className="pill"+(x.dataset.s===fSub?" "+ps:"");});
     renderResults();
   });
   document.getElementById("cPills").addEventListener("click",function(e){
-    var b=e.target.closest(".pill");if(!b)return;
+    var b=e.target.closest(".pill");if(!b||!b.dataset.c)return;
     fCat=b.dataset.c;
     Array.from(this.querySelectorAll(".pill")).forEach(function(x){x.className="pill"+(x.dataset.c===fCat?" "+pc:"");});
     renderResults();
@@ -269,75 +278,147 @@ function renderResults(){
   var c=document.getElementById("cntLine");
   var r=document.getElementById("results");
   if(c)c.textContent=vis.length+" idea"+(vis.length!==1?"s":"");
-  if(r)r.innerHTML=vis.length===0
-    ?'<div class="empty"><h3>'+(curIdeas().length===0?"No ideas yet — be the first!":"No results")+"</h3><p>"+(curIdeas().length===0?"Click “+ Share an idea” to add yours.":"Try adjusting your search or filters.")+"</p></div>"
-    :'<div class="grid">'+vis.map(cardHtml).join("")+"</div>";
+  if(r){
+    if(vis.length===0){
+      r.innerHTML="<div class='empty'><h3>"+(curIdeas().length===0?"No ideas yet \u2014 be the first!":"No results")+"</h3><p>"+(curIdeas().length===0?"Click \u201c+ Share an idea\u201d to add yours.":"Try adjusting your search or filters.")+"</p></div>";
+    } else {
+      var grid=document.createElement("div");
+      grid.className="grid";
+      vis.forEach(function(idea){
+        grid.appendChild(makeCard(idea));
+      });
+      r.innerHTML="";
+      r.appendChild(grid);
+    }
+  }
 }
 
-function cardHtml(idea){
-  var img=idea.imgUrl?'<img class="card-img" src="'+esc(idea.imgUrl)+'" alt="" onerror="this.style.display='none'">':'';
-  var editBtns='';
+function makeCard(idea){
+  var div=document.createElement("div");
+  div.className="card";
+  div.dataset.id=idea.id;
+
+  var html="";
+  if(idea.imgUrl){html+="<img class='card-img' src='"+esc(idea.imgUrl)+"' alt=''>";}
+  html+="<div class='card-body'>";
+  html+="<div class='tags'><span class='tag "+tagS()+"'>"+esc(idea.subject||"General")+"</span>"+(idea.category?"<span class='tag "+tagC()+"'>"+esc(idea.category)+"</span>":"")+"</div>";
+  html+="<div class='card-title'>"+esc(idea.title)+"</div>";
+  html+="<div class='card-desc'>"+esc(idea.desc)+"</div>";
+  html+="<div class='card-footer'><div class='avatar "+avCls()+"' style='width:28px;height:28px;font-size:10px'>"+ini(idea.author)+"</div>";
+  html+="<div><div style='font-size:12px;font-weight:500'>"+esc(idea.author||"Anonymous")+"</div><div style='font-size:11px;color:#969690'>"+fmtDate(idea.date)+"</div></div></div>";
+  html+="<div class='rxbar'>";
+  html+="<button class='rxbtn lik' data-id='"+idea.id+"' data-field='likes'>&#128077; "+(idea.likes||0)+"</button>";
+  html+="<button class='rxbtn tri' data-id='"+idea.id+"' data-field='tried'>&#10003; "+(idea.tried||0)+" tried</button>";
+  html+="<button class='shr' data-id='"+idea.id+"'>&#128279; Share</button>";
+  html+="</div>";
   if(isAdmin){
-    editBtns='<div style="display:flex;gap:6px;margin-top:8px">'+
-      '<button class="btn btn-outline btn-sm" style="font-size:12px" onclick="event.stopPropagation();editIdea(''+idea.id+'')">&#9999;&#65039; Edit</button>'+
-      '<button class="btn btn-red btn-sm" style="font-size:12px" onclick="event.stopPropagation();delIdea(''+idea.id+'')">&#128465; Delete</button></div>';
+    html+="<div style='display:flex;gap:6px;margin-top:8px'>";
+    html+="<button class='btn btn-outline btn-sm edit-btn' data-id='"+idea.id+"' style='font-size:12px'>&#9999;&#65039; Edit</button>";
+    html+="<button class='btn btn-red btn-sm del-btn' data-id='"+idea.id+"' style='font-size:12px'>&#128465; Delete</button>";
+    html+="</div>";
   } else if(idea.pin){
-    editBtns='<div style="margin-top:8px"><button class="btn btn-outline btn-sm" style="font-size:12px" onclick="event.stopPropagation();openPin(''+idea.id+'')">&#9999;&#65039; Edit my idea</button></div>';
+    html+="<div style='margin-top:8px'><button class='btn btn-outline btn-sm pin-btn' data-id='"+idea.id+"' style='font-size:12px'>&#9999;&#65039; Edit my idea</button></div>";
   }
-  return '<div class="card" onclick="showDetail(''+idea.id+'')">'+img+
-    '<div class="card-body">'+
-    '<div class="tags"><span class="tag '+tagS()+'">'+esc(idea.subject||"General")+'</span>'+(idea.category?'<span class="tag '+tagC()+'">'+esc(idea.category)+'</span>':'')+'</div>'+
-    '<div class="card-title">'+esc(idea.title)+'</div>'+
-    '<div class="card-desc">'+esc(idea.desc)+'</div>'+
-    '<div class="card-footer">'+
-    '<div class="avatar '+avCls()+'" style="width:28px;height:28px;font-size:10px">'+ini(idea.author)+'</div>'+
-    '<div><div style="font-size:12px;font-weight:500">'+esc(idea.author||"Anonymous")+'</div><div style="font-size:11px;color:#969690">'+fmtDate(idea.date)+'</div></div></div>'+
-    '<div class="rxbar">'+
-    '<button class="rxbtn lik" onclick="event.stopPropagation();react(''+idea.id+'','likes')">&#128077; '+(idea.likes||0)+'</button>'+
-    '<button class="rxbtn tri" onclick="event.stopPropagation();react(''+idea.id+'','tried')">&#10003; '+(idea.tried||0)+' tried</button>'+
-    '<button class="shr" onclick="event.stopPropagation();shareIdea(''+idea.id+'')">&#128279; Share</button>'+
-    '</div>'+editBtns+'</div></div>';
+  html+="</div>";
+  div.innerHTML=html;
+
+  div.addEventListener("click",function(e){
+    if(e.target.closest("button"))return;
+    showDetail(idea.id);
+  });
+  div.querySelectorAll(".rxbtn").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();react(btn.dataset.id,btn.dataset.field);});
+  });
+  div.querySelectorAll(".shr").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();shareIdea(btn.dataset.id);});
+  });
+  div.querySelectorAll(".edit-btn").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();showSubmit(btn.dataset.id);});
+  });
+  div.querySelectorAll(".del-btn").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();delIdea(btn.dataset.id);});
+  });
+  div.querySelectorAll(".pin-btn").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();openPin(btn.dataset.id);});
+  });
+  return div;
 }
 
 function showDetail(id){
   var idea=curIdeas().find(function(i){return i.id===id;});
   if(!idea){showBrowse();return;}
-  var img=idea.imgUrl?'<a href="'+esc(idea.imgUrl)+'" target="_blank"><img class="detail-img" src="'+esc(idea.imgUrl)+'" alt=""></a>':"";
-  var fileBtn="";
+  var m=document.getElementById("main");
+  m.innerHTML="";
+
+  var backBtn=document.createElement("button");
+  backBtn.className="back-btn";
+  backBtn.innerHTML="&#8592; Back to all ideas";
+  backBtn.addEventListener("click",showBrowse);
+  m.appendChild(backBtn);
+
+  var wrap=document.createElement("div");
+  wrap.style.maxWidth="720px";
+
+  var html="";
+  if(idea.imgUrl){html+="<a href='"+esc(idea.imgUrl)+"' target='_blank'><img class='detail-img' src='"+esc(idea.imgUrl)+"' alt=''></a>";}
+  html+="<div class='tags' style='margin-bottom:10px'><span class='tag "+tagS()+"'>"+esc(idea.subject||"General")+"</span>"+(idea.category?"<span class='tag "+tagC()+"'>"+esc(idea.category)+"</span>":"")+"</div>";
+  html+="<h2 style='font-size:22px;font-weight:500;margin-bottom:1rem;line-height:1.3'>"+esc(idea.title)+"</h2>";
+  html+="<div style='display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #f0efea'>";
+  html+="<div class='avatar "+avCls()+"' style='width:36px;height:36px;font-size:13px'>"+ini(idea.author)+"</div>";
+  html+="<div><div style='font-size:14px;font-weight:500'>"+esc(idea.author||"Anonymous")+"</div><div style='font-size:13px;color:#5c5c58'>"+fmtDate(idea.date)+"</div></div></div>";
+  html+="<div style='font-size:15px;line-height:1.85;white-space:pre-wrap;color:#1a1a18'>"+esc(idea.desc)+"</div>";
+  html+="<div style='display:flex;gap:8px;margin-top:1.5rem;flex-wrap:wrap'>";
+  html+="<button class='rxbtn lik' data-id='"+idea.id+"' data-field='likes'>&#128077; "+(idea.likes||0)+" likes</button>";
+  html+="<button class='rxbtn tri' data-id='"+idea.id+"' data-field='tried'>&#10003; "+(idea.tried||0)+" tried this</button>";
+  html+="<button class='shr' data-id='"+idea.id+"'>&#128279; Copy link</button></div>";
+
   if(idea.file){
     var isPdf=idea.file.name.toLowerCase().endsWith(".pdf");
-    fileBtn='<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea"><p style="font-size:12px;font-weight:500;color:#969690;margin-bottom:8px;letter-spacing:.05em">ATTACHMENT</p>'+
-      (isPdf?'<button class="btn btn-outline" style="margin-right:8px" onclick="openFile(''+id+'')">&#128196; Open PDF</button>':'')+
-      '<button class="btn btn-outline" onclick="dlFile(''+id+'')">&#11015; Download '+esc(idea.file.name)+'</button></div>';
+    html+="<div style='margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea'>";
+    html+="<p style='font-size:12px;font-weight:500;color:#969690;margin-bottom:8px;letter-spacing:.05em'>ATTACHMENT</p>";
+    if(isPdf)html+="<button class='btn btn-outline open-file-btn' style='margin-right:8px' data-id='"+idea.id+"'>&#128196; Open PDF</button>";
+    html+="<button class='btn btn-outline dl-file-btn' data-id='"+idea.id+"'>&#11015; Download "+esc(idea.file.name)+"</button></div>";
   }
-  var adminBtns="";
+
   if(isAdmin){
-    adminBtns='<div style="display:flex;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea">'+
-      '<button class="btn btn-outline" onclick="editIdea(''+id+'')">&#9999;&#65039; Edit</button>'+
-      '<button class="btn btn-red" onclick="delIdea(''+id+'')">&#128465; Delete</button></div>';
+    html+="<div style='display:flex;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea'>";
+    html+="<button class='btn btn-outline edit-btn' data-id='"+idea.id+"'>&#9999;&#65039; Edit</button>";
+    html+="<button class='btn btn-red del-btn' data-id='"+idea.id+"'>&#128465; Delete</button></div>";
   } else if(idea.pin){
-    adminBtns='<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea">'+
-      '<button class="btn btn-outline" onclick="openPin(''+id+'')">&#9999;&#65039; Edit my idea</button></div>';
+    html+="<div style='margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea'>";
+    html+="<button class='btn btn-outline pin-btn' data-id='"+idea.id+"'>&#9999;&#65039; Edit my idea</button></div>";
   }
-  document.getElementById("main").innerHTML=
-    '<button class="back-btn" onclick="showBrowse()">&#8592; Back to all ideas</button>'+
-    '<div style="max-width:720px">'+img+
-    '<div class="tags" style="margin-bottom:10px"><span class="tag '+tagS()+'">'+esc(idea.subject||"General")+'</span>'+(idea.category?'<span class="tag '+tagC()+'">'+esc(idea.category)+'</span>':'')+'</div>'+
-    '<h2 style="font-size:22px;font-weight:500;margin-bottom:1rem;line-height:1.3">'+esc(idea.title)+'</h2>'+
-    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #f0efea">'+
-    '<div class="avatar '+avCls()+'" style="width:36px;height:36px;font-size:13px">'+ini(idea.author)+'</div>'+
-    '<div><div style="font-size:14px;font-weight:500">'+esc(idea.author||"Anonymous")+'</div><div style="font-size:13px;color:#5c5c58">'+fmtDate(idea.date)+'</div></div></div>'+
-    '<div style="font-size:15px;line-height:1.85;white-space:pre-wrap;color:#1a1a18">'+esc(idea.desc)+'</div>'+
-    '<div style="display:flex;gap:8px;margin-top:1.5rem;flex-wrap:wrap">'+
-    '<button class="rxbtn lik" onclick="react(''+id+'','likes')">&#128077; '+(idea.likes||0)+' likes</button>'+
-    '<button class="rxbtn tri" onclick="react(''+id+'','tried')">&#10003; '+(idea.tried||0)+' tried this</button>'+
-    '<button class="shr" onclick="shareIdea(''+id+'')">&#128279; Copy link</button>'+
-    '</div>'+fileBtn+adminBtns+'</div>';
+
+  wrap.innerHTML=html;
+
+  wrap.querySelectorAll(".rxbtn").forEach(function(btn){
+    btn.addEventListener("click",function(){react(btn.dataset.id,btn.dataset.field);});
+  });
+  wrap.querySelectorAll(".shr").forEach(function(btn){
+    btn.addEventListener("click",function(){shareIdea(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".edit-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){showSubmit(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".del-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){delIdea(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".pin-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){openPin(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".dl-file-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){dlFile(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".open-file-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){openFile(btn.dataset.id);});
+  });
+
+  m.appendChild(wrap);
   window.scrollTo(0,0);
 }
 
 function dlFile(id){var idea=curIdeas().find(function(i){return i.id===id;});if(!idea||!idea.file)return;var a=document.createElement("a");a.href=idea.file.data;a.download=idea.file.name;a.click();}
-function openFile(id){var idea=curIdeas().find(function(i){return i.id===id;});if(!idea||!idea.file)return;var w=window.open();w.document.write('<iframe src="'+idea.file.data+'" style="width:100%;height:100vh;border:none"></iframe>');}
+function openFile(id){var idea=curIdeas().find(function(i){return i.id===id;});if(!idea||!idea.file)return;var w=window.open();w.document.write("<iframe src='"+idea.file.data+"' style='width:100%;height:100vh;border:none'></iframe>");}
 
 function showSubmit(editId){
   var ed=editId?curIdeas().find(function(i){return i.id===editId;}):null;
@@ -345,49 +426,77 @@ function showSubmit(editId){
   fileData=ed&&ed.file?ed.file.data:null;
   fileInfo=ed&&ed.file?{name:ed.file.name,type:ed.file.type}:null;
 
-  var sOpts=curSubjects().map(function(s){return '<option value="'+esc(s)+'"'+(ed&&ed.subject===s?" selected":"")+">"+esc(s)+"</option>";}).join("");
-  var cOpts=curCats().map(function(c){return '<option value="'+esc(c)+'"'+(ed&&ed.category===c?" selected":"")+">"+esc(c)+"</option>";}).join("");
-  var fc=sec==="academic"?"fc-a":"fc-o";
+  var m=document.getElementById("main");
+  m.innerHTML="";
 
-  var imgArea=imgData
-    ?'<div class="file-chip '+fc+'" id="imgArea"><img src="'+esc(imgData)+'" style="height:48px;width:72px;object-fit:cover;border-radius:6px" alt=""><span style="flex:1">Image added</span><button class="remove-btn" onclick="clearImg()">Remove</button></div>'
-    :'<div id="imgArea"><button class="upload-btn" onclick="document.getElementById('imgFile').click()">&#128444; Upload image</button><input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleImg(this)"></div>';
-  var fileArea=fileInfo
-    ?'<div class="file-chip '+fc+'" id="fileArea"><span style="flex:1">&#128206; '+esc(fileInfo.name)+'</span><button class="remove-btn" onclick="clearFile()">Remove</button></div>'
-    :'<div id="fileArea"><button class="upload-btn" onclick="document.getElementById('docFile').click()">&#128206; Attach file</button><input type="file" id="docFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.csv,.xlsx" style="display:none" onchange="handleFile(this)"><p class="hint">PDF, Word, PowerPoint, Excel etc. Max 1 MB.</p></div>';
+  var backBtn=document.createElement("button");
+  backBtn.className="back-btn";
+  backBtn.innerHTML="&#8592; Back";
+  backBtn.addEventListener("click",showBrowse);
+  m.appendChild(backBtn);
 
-  document.getElementById("main").innerHTML=
-    '<button class="back-btn" onclick="showBrowse()">&#8592; Back</button>'+
-    '<h2 style="font-size:20px;font-weight:500;margin-bottom:.25rem">'+(ed?"Edit idea":"Share an idea")+'</h2>'+
-    '<p style="font-size:13px;color:#969690;margin-bottom:1.5rem">'+(sec==="academic"?"Academic":"Operational")+' section</p>'+
-    '<div style="max-width:560px">'+
-    '<input type="hidden" id="editId" value="'+esc(editId||"")+'">'+
-    '<div class="form-group"><label>Title *</label><input type="text" id="fTitle" placeholder="Give your idea a clear title" value="'+esc(ed?ed.title:"")+'"></div>'+
-    '<div class="form-group"><label>Description *</label><textarea id="fDesc" rows="7" placeholder="Describe the idea, how it works, what went well, tips for colleagues...">'+esc(ed?ed.desc:"")+'</textarea></div>'+
-    '<div class="form-group form-row">'+
-    '<div><label>'+(sec==="academic"?"Subject":"Department")+'</label><select id="fSubject"><option value="">— choose —</option>'+sOpts+'</select></div>'+
-    '<div><label>Type of AI use</label><select id="fCategory"><option value="">— choose —</option>'+cOpts+'</select></div>'+
-    '</div>'+
-    '<div class="form-group"><label>Your name</label><input type="text" id="fAuthor" placeholder="Anonymous if left blank" value="'+esc(ed?ed.author:"")+'"></div>'+
-    '<div class="form-group">'+
-    '<label>Personal edit PIN <span style="font-weight:400;color:#969690">(optional)</span></label>'+
-    '<input type="password" id="fPin" placeholder="Choose a word or number you will remember">'+
-    '<p class="hint">Set this if you want to edit your idea later. PINs cannot be recovered if forgotten — please make a note of it. If you need help, contact basnettj@downehouse.net</p>'+
-    '</div>'+
-    '<div class="form-group"><label>Image (optional)</label>'+imgArea+'</div>'+
-    '<div class="form-group"><label>File / document (optional)</label>'+fileArea+'</div>'+
-    '<div id="errBox"></div>'+
-    '<div style="margin-top:1.5rem;display:flex;gap:8px">'+
-    '<button class="btn '+btnCls()+'" style="font-size:15px;padding:10px 28px" id="postBtn" onclick="doSubmit()">'+(ed?"Save changes":"Post idea")+'</button>'+
-    (ed?'<button class="btn btn-outline" onclick="showBrowse()">Cancel</button>':'')+
-    '</div></div>';
+  var wrap=document.createElement("div");
+  wrap.style.maxWidth="560px";
+
+  var sOpts="<option value=''>&#8212; choose &#8212;</option>"+curSubjects().map(function(s){return "<option value='"+esc(s)+"'"+(ed&&ed.subject===s?" selected":"")+">"+esc(s)+"</option>";}).join("");
+  var cOpts="<option value=''>&#8212; choose &#8212;</option>"+curCats().map(function(c){return "<option value='"+esc(c)+"'"+(ed&&ed.category===c?" selected":"")+">"+esc(c)+"</option>";}).join("");
+
+  wrap.innerHTML=
+    "<h2 style='font-size:20px;font-weight:500;margin-bottom:.25rem'>"+(ed?"Edit idea":"Share an idea")+"</h2>"+
+    "<p style='font-size:13px;color:#969690;margin-bottom:1.5rem'>"+(sec==="academic"?"Academic":"Operational")+" section</p>"+
+    "<input type='hidden' id='editId' value='"+(editId||"")+"'>"+
+    "<div class='form-group'><label>Title *</label><input type='text' id='fTitle' placeholder='Give your idea a clear title' value='"+esc(ed?ed.title:"")+"'></div>"+
+    "<div class='form-group'><label>Description *</label><textarea id='fDesc' rows='7' placeholder='Describe the idea, how it works, what went well, tips for colleagues...'>"+esc(ed?ed.desc:"")+"</textarea></div>"+
+    "<div class='form-group form-row'>"+
+    "<div><label>"+(sec==="academic"?"Subject":"Department")+"</label><select id='fSubject'>"+sOpts+"</select></div>"+
+    "<div><label>Type of AI use</label><select id='fCategory'>"+cOpts+"</select></div>"+
+    "</div>"+
+    "<div class='form-group'><label>Your name</label><input type='text' id='fAuthor' placeholder='Anonymous if left blank' value='"+esc(ed?ed.author:"")+"'></div>"+
+    "<div class='form-group'><label>Personal edit PIN <span style='font-weight:400;color:#969690'>(optional)</span></label>"+
+    "<input type='password' id='fPin' placeholder='Choose a word or number you will remember'>"+
+    "<p class='hint'>Set this if you want to edit your idea later. PINs cannot be recovered if forgotten &mdash; please make a note of it. If you need help, contact basnettj@downehouse.net</p></div>"+
+    "<div class='form-group'><label>Image (optional)</label><div id='imgArea'></div></div>"+
+    "<div class='form-group'><label>File / document (optional)</label><div id='fileArea'></div></div>"+
+    "<div id='errBox'></div>"+
+    "<div style='margin-top:1.5rem;display:flex;gap:8px'>"+
+    "<button class='btn "+btnCls()+"' style='font-size:15px;padding:10px 28px' id='postBtn'>"+(ed?"Save changes":"Post idea")+"</button>"+
+    (ed?"<button class='btn btn-outline' id='cancelBtn'>Cancel</button>":"")+
+    "</div>";
+
+  m.appendChild(wrap);
+  renderImgArea();
+  renderFileArea();
+
+  document.getElementById("postBtn").addEventListener("click",doSubmit);
+  if(ed){document.getElementById("cancelBtn").addEventListener("click",showBrowse);}
   window.scrollTo(0,0);
 }
 
-function editIdea(id){showSubmit(id);}
+function renderImgArea(){
+  var area=document.getElementById("imgArea");
+  if(!area)return;
+  if(imgData){
+    area.innerHTML="<div class='file-chip "+chipCls()+"'><img src='"+imgData+"' style='height:48px;width:72px;object-fit:cover;border-radius:6px' alt=''><span style='flex:1'>Image added</span><button class='remove-btn' id='removeImg'>Remove</button></div>";
+    document.getElementById("removeImg").addEventListener("click",function(){imgData=null;renderImgArea();});
+  } else {
+    area.innerHTML="<button class='upload-btn' id='trigImg'>&#128444; Upload image</button><input type='file' id='imgFile' accept='image/*' style='display:none'>";
+    document.getElementById("trigImg").addEventListener("click",function(){document.getElementById("imgFile").click();});
+    document.getElementById("imgFile").addEventListener("change",function(){handleImg(this);});
+  }
+}
 
-function clearImg(){imgData=null;document.getElementById("imgArea").outerHTML='<div id="imgArea"><button class="upload-btn" onclick="document.getElementById('imgFile').click()">&#128444; Upload image</button><input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleImg(this)"></div>';}
-function clearFile(){fileData=null;fileInfo=null;document.getElementById("fileArea").outerHTML='<div id="fileArea"><button class="upload-btn" onclick="document.getElementById('docFile').click()">&#128206; Attach file</button><input type="file" id="docFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.csv,.xlsx" style="display:none" onchange="handleFile(this)"><p class="hint">PDF, Word, PowerPoint, Excel etc. Max 1 MB.</p></div>';}
+function renderFileArea(){
+  var area=document.getElementById("fileArea");
+  if(!area)return;
+  if(fileInfo){
+    area.innerHTML="<div class='file-chip "+chipCls()+"'><span style='flex:1'>&#128206; "+esc(fileInfo.name)+"</span><button class='remove-btn' id='removeFile'>Remove</button></div>";
+    document.getElementById("removeFile").addEventListener("click",function(){fileData=null;fileInfo=null;renderFileArea();});
+  } else {
+    area.innerHTML="<button class='upload-btn' id='trigFile'>&#128206; Attach file</button><input type='file' id='docFile' accept='.pdf,.doc,.docx,.ppt,.pptx,.txt,.csv,.xlsx' style='display:none'><p class='hint'>PDF, Word, PowerPoint, Excel etc. Max 1 MB.</p>";
+    document.getElementById("trigFile").addEventListener("click",function(){document.getElementById("docFile").click();});
+    document.getElementById("docFile").addEventListener("change",function(){handleFile(this);});
+  }
+}
 
 function handleImg(input){
   var f=input.files[0];if(!f)return;
@@ -399,8 +508,7 @@ function handleImg(input){
       if(w>h&&w>MAX){h=Math.round(h*MAX/w);w=MAX;}else if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
       var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
       imgData=c.toDataURL("image/jpeg",0.82);
-      var fc=sec==="academic"?"fc-a":"fc-o";
-      document.getElementById("imgArea").outerHTML='<div class="file-chip '+fc+'" id="imgArea"><img src="'+imgData+'" style="height:48px;width:72px;object-fit:cover;border-radius:6px" alt=""><span style="flex:1">Image added</span><button class="remove-btn" onclick="clearImg()">Remove</button></div>';
+      renderImgArea();
     };
     img.src=e.target.result;
   };
@@ -409,13 +517,13 @@ function handleImg(input){
 
 function handleFile(input){
   var f=input.files[0];if(!f)return;
-  if(f.size>1.1*1024*1024){document.getElementById("errBox").innerHTML='<div class="err-box">File too large (max 1 MB). Paste a Google Drive link in the description instead.</div>';return;}
+  if(f.size>1.1*1024*1024){
+    var eb=document.getElementById("errBox");
+    if(eb)eb.innerHTML="<div class='err-box'>File too large (max 1 MB). Paste a Google Drive link in the description instead.</div>";
+    return;
+  }
   var rd=new FileReader();
-  rd.onload=function(e){
-    fileData=e.target.result;fileInfo={name:f.name,type:f.type};
-    var fc=sec==="academic"?"fc-a":"fc-o";
-    document.getElementById("fileArea").outerHTML='<div class="file-chip '+fc+'" id="fileArea"><span style="flex:1">&#128206; '+esc(f.name)+'</span><button class="remove-btn" onclick="clearFile()">Remove</button></div>';
-  };
+  rd.onload=function(e){fileData=e.target.result;fileInfo={name:f.name,type:f.type};renderFileArea();};
   rd.readAsDataURL(f);
 }
 
@@ -427,7 +535,7 @@ function doSubmit(){
   var category=document.getElementById("fCategory").value;
   var pin=document.getElementById("fPin").value.trim();
   var editId=document.getElementById("editId").value;
-  if(!title||!desc){document.getElementById("errBox").innerHTML='<div class="err-box">Please add a title and description.</div>';return;}
+  if(!title||!desc){document.getElementById("errBox").innerHTML="<div class='err-box'>Please add a title and description.</div>";return;}
   var btn=document.getElementById("postBtn");btn.disabled=true;btn.textContent="Saving...";
   document.getElementById("errBox").innerHTML="";
   var existing=editId?curIdeas().find(function(i){return i.id===editId;}):null;
@@ -446,7 +554,7 @@ function doSubmit(){
     else{ideas[sec].unshift(idea);}
     showBrowse();
   }).catch(function(){
-    document.getElementById("errBox").innerHTML='<div class="err-box">Could not save. Check your connection and try again.</div>';
+    document.getElementById("errBox").innerHTML="<div class='err-box'>Could not save. Check your connection and try again.</div>";
     btn.disabled=false;btn.textContent=editId?"Save changes":"Post idea";
   });
 }
@@ -462,22 +570,10 @@ function react(id,field){
   if(!idea)return;
   idea[field]=(idea[field]||0)+1;
   fbSave(sec,idea).then(function(){
-    // update just the button text without full re-render
-    document.querySelectorAll(".rxbtn.lik").forEach(function(b){
-      if(b.closest(".card")&&b.closest(".card").getAttribute("onclick")&&b.closest(".card").getAttribute("onclick").includes(id)){
-        b.innerHTML="&#128077; "+idea.likes;
-      }
+    document.querySelectorAll("[data-id='"+id+"'][data-field='"+field+"']").forEach(function(btn){
+      if(field==="likes")btn.innerHTML="&#128077; "+idea.likes+(btn.closest(".card")?"":(" likes"));
+      else btn.innerHTML="&#10003; "+idea.tried+(btn.closest(".card")?(" tried"):(" tried this"));
     });
-    document.querySelectorAll(".rxbtn.tri").forEach(function(b){
-      if(b.closest(".card")&&b.closest(".card").getAttribute("onclick")&&b.closest(".card").getAttribute("onclick").includes(id)){
-        b.innerHTML="&#10003; "+idea.tried+" tried";
-      }
-    });
-    // if on detail page, update those buttons too
-    var detLik=document.querySelector(".rxbtn.lik");
-    var detTri=document.querySelector(".rxbtn.tri");
-    if(detLik&&!detLik.closest(".card")){detLik.innerHTML="&#128077; "+idea.likes+" likes";}
-    if(detTri&&!detTri.closest(".card")){detTri.innerHTML="&#10003; "+idea.tried+" tried this";}
   }).catch(function(){idea[field]=Math.max(0,(idea[field]||1)-1);});
 }
 
@@ -507,12 +603,14 @@ function openPin(id){
   setTimeout(function(){document.getElementById("pinInput").focus();},50);
 }
 function closePinModal(){document.getElementById("pinModal").style.display="none";pendingPin=null;}
+
 document.getElementById("pinConfirmBtn").addEventListener("click",function(){
   var idea=curIdeas().find(function(i){return i.id===pendingPin;});
   if(!idea){closePinModal();return;}
-  if(document.getElementById("pinInput").value.trim()===idea.pin){closePinModal();editIdea(pendingPin);}
+  if(document.getElementById("pinInput").value.trim()===idea.pin){closePinModal();showSubmit(pendingPin);}
   else{document.getElementById("pinErr").textContent="Incorrect PIN. Please try again.";document.getElementById("pinInput").select();}
 });
+document.getElementById("pinCancelBtn").addEventListener("click",closePinModal);
 document.getElementById("pinInput").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("pinConfirmBtn").click();});
 document.getElementById("pinModal").addEventListener("click",function(e){if(e.target===this)closePinModal();});
 
@@ -529,6 +627,7 @@ document.getElementById("adminLoginBtn").addEventListener("click",function(){
     document.getElementById("adminPwErr").textContent="Incorrect password.";document.getElementById("adminPwInput").select();
   }
 });
+document.getElementById("adminCancelBtn").addEventListener("click",closeAdminModal);
 document.getElementById("adminPwInput").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("adminLoginBtn").click();});
 document.getElementById("adminModal").addEventListener("click",function(e){if(e.target===this)closeAdminModal();});
 function closeAdminModal(){document.getElementById("adminModal").style.display="none";}
