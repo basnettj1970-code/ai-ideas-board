@@ -475,7 +475,7 @@ function showSubmit(editId){
     "<p style='font-size:13px;color:#969690;margin-bottom:1.5rem'>"+(sec==="academic"?"Academic":"Operational")+" section</p>"+
     "<input type='hidden' id='editId' value='"+(editId||"")+"'>"+
     "<div class='form-group'><label>Title *</label><input type='text' id='fTitle' placeholder='Give your idea a clear title' value='"+esc(ed?ed.title:"")+"'></div>"+
-    "<div class='form-group'><label>Description *</label><textarea id='fDesc' rows='7' placeholder='Describe the idea, how it works in practice, what went well, and any tips for colleagues. If possible, please also upload a screenshot below showing what this looks like for students.'>"+esc(ed?ed.desc:"")+"</textarea></div>"+
+    "<div class='form-group'><label>Description *</label><textarea id='fDesc' rows='7' placeholder='"+(sec==="academic"?"Describe the idea, how it works in practice, what went well, and any tips for colleagues. If possible, please also upload a screenshot showing what it looks like for pupils.":"Describe how you are using AI, what worked well, and any tips for colleagues. If helpful, please also upload a screenshot to help clarify your idea further.")+"'>"+esc(ed?ed.desc:"")+"</textarea></div>"+
     "<div class='form-group form-row'>"+
     "<div><label>"+(sec==="academic"?"Subject":"Department")+"</label><select id='fSubject'>"+sOpts+"</select></div>"+
     "<div><label>Type of AI use</label><select id='fCategory'>"+cOpts+"</select></div>"+
