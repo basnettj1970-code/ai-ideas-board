@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ideas Board — Downe House</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#faf9f6;color:#1a1a18;min-height:100vh}
+header{background:#1d6e5e;padding:0 24px;position:sticky;top:0;z-index:10}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+.logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500;flex-shrink:0;color:#fff}
+.dh-badge{width:38px;height:38px;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.35);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#fff;letter-spacing:-0.5px;flex-shrink:0}
+.logo-divider{color:rgba(255,255,255,0.35);font-size:18px;font-weight:300;margin:0 2px}
+.header-right{display:flex;align-items:center;gap:8px}
+.section-switcher{display:flex;border-top:1px solid rgba(255,255,255,0.15);gap:0}
+.switcher-btn{font-family:inherit;font-size:14px;font-weight:500;padding:10px 24px;border:none;background:transparent;cursor:pointer;color:rgba(255,255,255,0.6);border-bottom:3px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px}
+.switcher-btn:hover{color:#fff}
+.switcher-btn.active{color:#fff;border-bottom-color:#fff}
+.btn{font-family:inherit;font-size:14px;font-weight:500;padding:9px 18px;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;line-height:1;transition:background .15s}
+.btn-green{background:#1d6e5e;color:#fff}.btn-green:hover{background:#155046}
+.btn-blue{background:#1e40af;color:#fff}.btn-blue:hover{background:#1e3a8a}
+.btn-ghost{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)}.btn-ghost:hover{background:rgba(255,255,255,0.25)}
+.btn-outline{background:#fff;color:#5c5c58;border:1px solid #e0e0db}.btn-outline:hover{background:#f5f5f2}
+.btn-red{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}.btn-red:hover{background:#fecaca}
+.btn-sm{padding:6px 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:1100px;margin:0 auto;padding:2rem 24px 4rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1rem;margin-top:1rem}
+.card{background:#fff;border:1px solid #e5e5e0;border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .15s,border-color .15s;display:flex;flex-direction:column}
+.card:hover{border-color:#aaa;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.card-img{width:100%;height:160px;object-fit:cover;display:block;background:#f0eeea;flex-shrink:0}
+.card-body{padding:1rem 1.1rem;display:flex;flex-direction:column;flex:1}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;display:inline-block}
+.tag-sa{background:#e8f4f1;color:#155046}.tag-ca{background:#ede9fe;color:#5b21b6}
+.tag-so{background:#dbeafe;color:#1e3a8a}.tag-co{background:#fef3c7;color:#92400e}
+.card-title{font-size:15px;font-weight:500;margin-bottom:5px;line-height:1.35}
+.card-desc{font-size:13px;color:#5c5c58;line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;flex:1}
+.card-footer{display:flex;align-items:center;gap:8px;padding-top:10px;border-top:1px solid #f0efea;margin-top:auto}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:500;flex-shrink:0;text-transform:uppercase}
+.av-a{background:#d9eef9;color:#1a5f8a}.av-o{background:#dbeafe;color:#1e40af}
+.search-wrap{position:relative;margin-bottom:1rem}
+.search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#aaa;pointer-events:none}
+.search-input{font-family:inherit;font-size:14px;padding:10px 12px 10px 36px;border:1px solid #ddd;border-radius:8px;width:100%;outline:none;background:#fff;color:#1a1a18}
+.search-input:focus{border-color:#1d6e5e;box-shadow:0 0 0 3px rgba(29,110,94,.1)}
+.filter-row{margin-bottom:.85rem}
+.filter-label{font-size:12px;font-weight:500;color:#969690;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.pill-wrap{display:flex;gap:5px;flex-wrap:wrap}
+.pill{font-family:inherit;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;cursor:pointer;border:1px solid #e0e0db;background:transparent;color:#5c5c58;white-space:nowrap;transition:all .12s}
+.pill:hover{border-color:#aaa}
+.psa{background:#1d6e5e;color:#fff;border-color:#1d6e5e}.pca{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.pso{background:#1e40af;color:#fff;border-color:#1e40af}.pco{background:#d97706;color:#fff;border-color:#d97706}
+.sort-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.sort-lbl{font-size:12px;font-weight:500;color:#969690;white-space:nowrap}
+.sort-btn{font-family:inherit;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;cursor:pointer;border:1px solid #e0e0db;background:transparent;color:#5c5c58;transition:all .12s}
+.sort-btn:hover{border-color:#aaa}.sort-btn.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.rxbar{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.rxbtn{font-family:inherit;font-size:12px;font-weight:500;padding:5px 10px;border-radius:20px;cursor:pointer;border:1px solid #e0e0db;background:#fff;color:#5c5c58;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
+.rxbtn:hover{border-color:#aaa;background:#f5f5f2}
+.rxbtn.lik{background:#fef9c3;border-color:#fcd34d;color:#92400e}
+.rxbtn.tri{background:#dcfce7;border-color:#86efac;color:#166534}
+.shr{font-family:inherit;font-size:12px;padding:5px 10px;border-radius:20px;cursor:pointer;border:1px solid #e0e0db;background:#fff;color:#5c5c58;display:inline-flex;align-items:center;gap:4px;transition:all .15s;margin-left:auto}
+.shr:hover{border-color:#aaa;background:#f5f5f2}
+.form-group{margin-bottom:1.1rem}
+label{display:block;font-size:13px;font-weight:500;color:#5c5c58;margin-bottom:6px}
+input[type=text],input[type=password],textarea,select{width:100%;font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a18;outline:none;transition:border-color .15s,box-shadow .15s}
+input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:#1d6e5e;box-shadow:0 0 0 3px rgba(29,110,94,.1)}
+textarea{resize:vertical;line-height:1.65}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.upload-btn{font-family:inherit;font-size:13px;padding:8px 14px;border:1px dashed #ccc;border-radius:8px;cursor:pointer;color:#5c5c58;background:transparent;display:inline-flex;align-items:center;gap:6px}
+.upload-btn:hover{border-color:#1d6e5e;color:#1d6e5e}
+.file-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:13px}
+.fc-a{background:#e8f4f1;color:#155046}.fc-o{background:#dbeafe;color:#1e3a8a}
+.remove-btn{margin-left:auto;font-size:12px;font-family:inherit;background:transparent;border:1px solid currentColor;border-radius:4px;padding:2px 8px;cursor:pointer;flex-shrink:0}
+.err-box{padding:10px 14px;background:#fdf0f0;color:#b91c1c;border-radius:8px;font-size:13px;margin-top:12px}
+.hint{font-size:12px;color:#969690;margin-top:5px;line-height:1.5}
+.back-btn{font-family:inherit;font-size:14px;color:#5c5c58;background:none;border:none;cursor:pointer;padding:0;margin-bottom:1.5rem;display:flex;align-items:center;gap:4px}
+.back-btn:hover{color:#1a1a18}
+.empty{text-align:center;padding:4rem 2rem;color:#5c5c58}
+.empty h3{font-size:18px;font-weight:500;margin-bottom:6px;color:#1a1a18}
+.detail-img{width:100%;max-height:400px;object-fit:cover;border-radius:12px;display:block;margin-bottom:1.5rem;cursor:zoom-in}
+.admin-bar{margin-bottom:1rem;padding:8px 14px;background:#fef9c3;border-radius:8px;font-size:13px;color:#854d0e;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+.modal{background:#fff;border-radius:12px;padding:1.5rem;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal h3{font-size:17px;font-weight:500;margin-bottom:4px}
+.modal p{font-size:13px;color:#5c5c58;margin-bottom:1rem;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;font-size:13px;padding:10px 20px;border-radius:20px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}.switcher-btn{padding:10px 14px;font-size:13px}}
+</style>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BVYQPZTMQQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-BVYQPZTMQQ');
+</script>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo" id="homeLogo" style="cursor:pointer" title="Back to home">
+      <img src="data:image/png;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADjqf+Ep2l9QcqbDAAAAAElFTkSuQmCC" alt="DH" style="height:36px;width:36px;object-fit:contain;flex-shrink:0">
+      <span class="logo-divider">|</span>
+      AI Ideas Board
+    </div>
+    <div class="header-right">
+      <button class="btn btn-ghost btn-sm" id="adminBtn">&#128274; Admin</button>
+      <button class="btn btn-green" id="shareBtn">+ Share an idea</button>
+    </div>
+  </div>
+  <div class="section-switcher">
+    <button class="switcher-btn active" id="btnAcademic" data-sec="academic">&#127891; Academic Staff</button>
+    <button class="switcher-btn" id="btnOperational" data-sec="operational">&#127970; Operational Staff</button>
+  </div>
+</header>
+
+<div class="modal-overlay" id="adminModal" style="display:none">
+  <div class="modal">
+    <h3>Admin login</h3>
+    <p>Enter the admin password to edit or delete any idea.</p>
+    <input type="password" id="adminPwInput" placeholder="Password" style="margin-bottom:8px">
+    <div id="adminPwErr" style="color:#b91c1c;font-size:13px;margin-bottom:8px;min-height:20px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" style="flex:1" id="adminLoginBtn">Log in</button>
+      <button class="btn btn-outline" id="adminCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pinModal" style="display:none">
+  <div class="modal">
+    <h3>Edit your idea</h3>
+    <p>Enter the personal PIN you set when you posted this idea.</p>
+    <input type="password" id="pinInput" placeholder="Your PIN" style="margin-bottom:8px">
+    <div id="pinErr" style="color:#b91c1c;font-size:13px;margin-bottom:8px;min-height:20px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" style="flex:1" id="pinConfirmBtn">Confirm</button>
+      <button class="btn btn-outline" id="pinCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<main id="main"><p style="text-align:center;padding:3rem;color:#969690;font-size:14px">Loading ideas&hellip;</p></main>
+
+<script>
+var DB = "https://dh-ai-ideas-default-rtdb.europe-west1.firebasedatabase.app";
+var ADMIN_PASSWORD = "downe2025";
+
+var ACADEMIC_SUBJECTS = ["Art & Design","Biology","Chemistry","Classics","Computing","Design Technology","Drama","Economics","English","Geography","History","Languages","Mathematics","Music","PE","Physics","PSHE","Psychology","Religious Studies","Science","SEN, LS & EAL","Sixth Form","Sociology"];
+var ACADEMIC_CATEGORIES = ["Assessment","Creative Writing","Critiquing Output","Discussion Starter","Differentiation","Feedback","Lesson Planning","Marking","Prompt Writing","Refining Prompts","Research","Resource Creation","Revision","Scaffolding","Other"];
+var OPERATIONAL_SUBJECTS = ["Admissions","Bursary","Development & Fundraising","Estates & Facilities","Finance","HR & Staffing","IT","Library","Marketing & Communications","Medical","Registrar","Senior Leadership","Other"];
+var OPERATIONAL_CATEGORIES = ["Admin & Organisation","Budget & Finance","Communication","Data Sorting & Analysis","Email Drafting","Letter Writing","Meeting Notes & Minutes","Parent Correspondence","Policy & Procedures","Report Writing","Research","Scheduling & Planning","Staff Communications","Summarising Documents","Other"];
+
+var sec = "academic";
+var ideas = {academic:[],operational:[]};
+var isAdmin = false;
+var fSub = "All", fCat = "All types", fQ = "", fSort = "newest";
+var imgData = null, fileData = null, fileInfo = null, pendingPin = null;
+
+function fbGet(s){return fetch(DB+(s==="academic"?"/ideas":"/op-ideas")+".json").then(function(r){return r.json();});}
+function fbSave(s,idea){
+  return fetch(DB+(s==="academic"?"/ideas":"/op-ideas")+"/"+idea.id+".json",{
+    method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(idea)
+  }).then(function(r){if(!r.ok)throw new Error("fail");});
+}
+function fbDel(s,id){
+  return fetch(DB+(s==="academic"?"/ideas":"/op-ideas")+"/"+id+".json",{method:"DELETE"})
+    .then(function(r){if(!r.ok)throw new Error("fail");});
+}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fmtDate(iso){return new Date(iso).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});}
+function ini(name){var p=(name||"A").trim().split(" ").filter(Boolean);return(p.length>=2?p[0][0]+p[p.length-1][0]:(name||"A").slice(0,2)).toUpperCase();}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function curIdeas(){return ideas[sec];}
+function curSubjects(){return sec==="academic"?ACADEMIC_SUBJECTS:OPERATIONAL_SUBJECTS;}
+function curCats(){return sec==="academic"?ACADEMIC_CATEGORIES:OPERATIONAL_CATEGORIES;}
+function tagS(){return sec==="academic"?"tag-sa":"tag-so";}
+function tagC(){return sec==="academic"?"tag-ca":"tag-co";}
+function avCls(){return sec==="academic"?"av-a":"av-o";}
+function psCls(){return sec==="academic"?"psa":"pso";}
+function pcCls(){return sec==="academic"?"pca":"pco";}
+function btnCls(){return sec==="academic"?"btn-green":"btn-blue";}
+function chipCls(){return sec==="academic"?"fc-a":"fc-o";}
+function secDesc(){
+  return sec==="academic"
+    ?"The AI Ideas Board is a place for colleagues to share ideas for AI use — whether for your own admin and resource creation, or for activities undertaken in the classroom. Browse what others are trying, add your own ideas, and help build a shared picture of AI across Downe House."
+    :"The AI Ideas Board is a place for operational colleagues to share how AI is helping with day-to-day tasks — from drafting communications and sorting data to planning and research. Browse ideas from across the school and add your own.";
+}
+
+function showLanding(){
+  var m=document.getElementById("main");
+  var total=ideas.academic.length+ideas.operational.length;
+  m.innerHTML=
+    "<div style='max-width:640px;margin:4rem auto;text-align:center;padding:0 1rem'>"+
+    "<img src='data:image/png;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHPU/pSMxtul5yB4AAAAASUVORK5CYII=' alt='DH' style='width:64px;height:64px;object-fit:contain;margin:0 auto 1.5rem;display:block'>"+
+    "<h1 style='font-size:28px;font-weight:500;color:#1a1a18;margin-bottom:1rem;line-height:1.3'>AI Ideas Board</h1>"+
+    "<p style='font-size:15px;color:#5c5c58;line-height:1.8;margin-bottom:2.5rem'>The AI Ideas Board is a place for Downe House colleagues to share ideas for AI use &mdash; whether for your own admin and resource creation, or for activities undertaken in the classroom. Browse what others are trying, add your own ideas, and help build a shared picture of AI across Downe House.</p>"+
+    "<div style='display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem'>"+
+    "<button id='landAcademic' style='flex:1;min-width:200px;max-width:260px;padding:1.25rem 1.5rem;background:#1d6e5e;color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:8px;transition:background .15s'>"+
+    "<span style='font-size:28px'>&#127891;</span>Academic Staff<span style='font-size:12px;opacity:.8;font-weight:400'>Lesson ideas &amp; classroom activities</span></button>"+
+    "<button id='landOperational' style='flex:1;min-width:200px;max-width:260px;padding:1.25rem 1.5rem;background:#1e40af;color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:8px;transition:background .15s'>"+
+    "<span style='font-size:28px'>&#127970;</span>Operational Staff<span style='font-size:12px;opacity:.8;font-weight:400'>Admin, communications &amp; planning</span></button>"+
+    "</div>"+
+    "<p style='font-size:13px;color:#969690'>"+total+" ideas shared so far</p>"+
+    "</div>";
+
+  document.getElementById("landAcademic").addEventListener("mouseover",function(){this.style.background="#155046";});
+  document.getElementById("landAcademic").addEventListener("mouseout",function(){this.style.background="#1d6e5e";});
+  document.getElementById("landOperational").addEventListener("mouseover",function(){this.style.background="#1e3a8a";});
+  document.getElementById("landOperational").addEventListener("mouseout",function(){this.style.background="#1e40af";});
+  document.getElementById("landAcademic").addEventListener("click",function(){switchSection("academic");});
+  document.getElementById("landOperational").addEventListener("click",function(){switchSection("operational");});
+}
+
+function loadAll(){
+  Promise.all([fbGet("academic"),fbGet("operational")]).then(function(res){
+    ["academic","operational"].forEach(function(s,i){
+      ideas[s]=[];
+      var d=res[i];
+      if(d&&typeof d==="object"){
+        Object.values(d).forEach(function(v){if(v)ideas[s].push(v);});
+        ideas[s].sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+      }
+    });
+    var p=new URLSearchParams(window.location.search);
+    if(p.get("section")||p.get("idea")){
+      checkUrl();
+    } else {
+      showLanding();
+    }
+  }).catch(function(){showLanding();});
+}
+
+function switchSection(s){
+  sec=s; fSub="All"; fCat="All types"; fQ=""; fSort="newest";
+  document.getElementById("shareBtn").className="btn "+btnCls();
+  document.getElementById("btnAcademic").className="switcher-btn"+(s==="academic"?" active":"");
+  document.getElementById("btnOperational").className="switcher-btn"+(s==="operational"?" active":"");
+  renderBrowse();
+}
+
+document.getElementById("btnAcademic").addEventListener("click",function(){switchSection("academic");});
+document.getElementById("btnOperational").addEventListener("click",function(){switchSection("operational");});
+
+function showBrowse(){renderBrowse();window.scrollTo(0,0);}
+
+function renderBrowse(){
+  var ps=psCls(), pc=pcCls();
+  var subs=["All"].concat(curSubjects());
+  var sPills=subs.map(function(s){
+    return "<button class='pill"+(fSub===s?" "+ps:"")+"' data-s='"+s+"'>"+esc(s)+"</button>";
+  }).join("");
+  var cats=["All types"].concat(curCats());
+  var cPills=cats.map(function(c){
+    return "<button class='pill"+(fCat===c?" "+pc:"")+"' data-c='"+c+"'>"+esc(c)+"</button>";
+  }).join("");
+  var adminBar=isAdmin?"<div class='admin-bar'><span>&#128275; Admin mode &mdash; you can edit and delete any idea</span><button class='btn btn-outline btn-sm' id='logoutBtn' style='margin-left:auto'>Log out</button></div>":"";
+
+  document.getElementById("main").innerHTML=
+    adminBar+
+    "<p style='font-size:14px;color:#5c5c58;margin-bottom:1.25rem;line-height:1.7'>"+secDesc()+"</p>"+
+    "<div class='search-wrap'><svg width='14' height='14' viewBox='0 0 14 14' fill='none'><circle cx='6' cy='6' r='5' stroke='currentColor' stroke-width='1.4'/><path d='M10 10l3 3' stroke='currentColor' stroke-width='1.4' stroke-linecap='round'/></svg>"+
+    "<input id='searchBox' class='search-input' placeholder='Search by title, description, subject or author...' value='"+esc(fQ)+"'></div>"+
+    "<div class='filter-row'><div class='filter-label'>"+(sec==="academic"?"Subject":"Department")+"</div><div class='pill-wrap' id='sPills'>"+sPills+"</div></div>"+
+    "<div class='filter-row' style='margin-bottom:1.25rem'><div class='filter-label'>Type of AI use</div><div class='pill-wrap' id='cPills'>"+cPills+"</div></div>"+
+    "<div class='sort-bar'><span class='sort-lbl'>Sort by:</span>"+
+    "<button class='sort-btn"+(fSort==="newest"?" active":"")+"' data-sort='newest'>Newest</button>"+
+    "<button class='sort-btn"+(fSort==="liked"?" active":"")+"' data-sort='liked'>&#128077; Most liked</button>"+
+    "<button class='sort-btn"+(fSort==="tried"?" active":"")+"' data-sort='tried'>&#10003; Most tried</button>"+
+    "</div>"+
+    "<p id='cntLine' style='font-size:13px;color:#969690;margin-bottom:1rem'></p>"+
+    "<div id='results'></div>";
+
+  if(isAdmin){
+    var lb=document.getElementById("logoutBtn");
+    if(lb)lb.addEventListener("click",logoutAdmin);
+  }
+  document.getElementById("searchBox").addEventListener("input",function(){fQ=this.value;renderResults();});
+  document.getElementById("sPills").addEventListener("click",function(e){
+    var b=e.target.closest(".pill");if(!b||!b.dataset.s)return;
+    fSub=b.dataset.s;
+    Array.from(this.querySelectorAll(".pill")).forEach(function(x){x.className="pill"+(x.dataset.s===fSub?" "+ps:"");});
+    renderResults();
+  });
+  document.getElementById("cPills").addEventListener("click",function(e){
+    var b=e.target.closest(".pill");if(!b||!b.dataset.c)return;
+    fCat=b.dataset.c;
+    Array.from(this.querySelectorAll(".pill")).forEach(function(x){x.className="pill"+(x.dataset.c===fCat?" "+pc:"");});
+    renderResults();
+  });
+  document.querySelector(".sort-bar").addEventListener("click",function(e){
+    var b=e.target.closest(".sort-btn");if(!b)return;
+    fSort=b.dataset.sort;
+    Array.from(this.querySelectorAll(".sort-btn")).forEach(function(x){x.className="sort-btn"+(x.dataset.sort===fSort?" active":"");});
+    renderResults();
+  });
+  renderResults();
+}
+
+function renderResults(){
+  var vis=curIdeas().filter(function(i){
+    var q=fQ.toLowerCase();
+    var mq=!q||[i.title,i.desc,i.subject,i.category,i.author].some(function(x){return(x||"").toLowerCase().includes(q);});
+    return mq&&(fSub==="All"||i.subject===fSub)&&(fCat==="All types"||i.category===fCat);
+  });
+  if(fSort==="liked")vis.sort(function(a,b){return(b.likes||0)-(a.likes||0);});
+  else if(fSort==="tried")vis.sort(function(a,b){return(b.tried||0)-(a.tried||0);});
+  var c=document.getElementById("cntLine");
+  var r=document.getElementById("results");
+  if(c)c.textContent=vis.length+" idea"+(vis.length!==1?"s":"");
+  if(r){
+    if(vis.length===0){
+      r.innerHTML="<div class='empty'><h3>"+(curIdeas().length===0?"No ideas yet \u2014 be the first!":"No results")+"</h3><p>"+(curIdeas().length===0?"Click \u201c+ Share an idea\u201d to add yours.":"Try adjusting your search or filters.")+"</p></div>";
+    } else {
+      var grid=document.createElement("div");
+      grid.className="grid";
+      vis.forEach(function(idea){
+        grid.appendChild(makeCard(idea));
+      });
+      r.innerHTML="";
+      r.appendChild(grid);
+    }
+  }
+}
+
+function makeCard(idea){
+  var div=document.createElement("div");
+  div.className="card";
+  div.dataset.id=idea.id;
+
+  var html="";
+  if(idea.imgUrl){html+="<img class='card-img' src='"+esc(idea.imgUrl)+"' alt=''>";}
+  html+="<div class='card-body'>";
+  html+="<div class='tags'><span class='tag "+tagS()+"'>"+esc(idea.subject||"General")+"</span>"+(idea.category?"<span class='tag "+tagC()+"'>"+esc(idea.category)+"</span>":"")+"</div>";
+  html+="<div class='card-title'>"+esc(idea.title)+"</div>";
+  html+="<div class='card-desc'>"+esc(idea.desc)+"</div>";
+  html+="<div class='card-footer'><div class='avatar "+avCls()+"' style='width:28px;height:28px;font-size:10px'>"+ini(idea.author)+"</div>";
+  html+="<div><div style='font-size:12px;font-weight:500'>"+esc(idea.author||"Anonymous")+"</div><div style='font-size:11px;color:#969690'>"+fmtDate(idea.date)+"</div></div></div>";
+  html+="<div class='rxbar'>";
+  html+="<button class='rxbtn lik' data-id='"+idea.id+"' data-field='likes'>&#128077; "+(idea.likes||0)+"</button>";
+  html+="<button class='rxbtn tri' data-id='"+idea.id+"' data-field='tried'>&#10003; "+(idea.tried||0)+" tried</button>";
+  html+="<button class='shr' data-id='"+idea.id+"'>&#128279; Share</button>";
+  html+="</div>";
+  if(isAdmin){
+    html+="<div style='display:flex;gap:6px;margin-top:8px'>";
+    html+="<button class='btn btn-outline btn-sm edit-btn' data-id='"+idea.id+"' style='font-size:12px'>&#9999;&#65039; Edit</button>";
+    html+="<button class='btn btn-red btn-sm del-btn' data-id='"+idea.id+"' style='font-size:12px'>&#128465; Delete</button>";
+    html+="</div>";
+  } else if(idea.pin){
+    html+="<div style='margin-top:8px'><button class='btn btn-outline btn-sm pin-btn' data-id='"+idea.id+"' style='font-size:12px'>&#9999;&#65039; Edit my idea</button></div>";
+  }
+  html+="</div>";
+  div.innerHTML=html;
+
+  div.addEventListener("click",function(e){
+    if(e.target.closest("button"))return;
+    showDetail(idea.id);
+  });
+  div.querySelectorAll(".rxbtn").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();react(btn.dataset.id,btn.dataset.field);});
+  });
+  div.querySelectorAll(".shr").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();shareIdea(btn.dataset.id);});
+  });
+  div.querySelectorAll(".edit-btn").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();showSubmit(btn.dataset.id);});
+  });
+  div.querySelectorAll(".del-btn").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();delIdea(btn.dataset.id);});
+  });
+  div.querySelectorAll(".pin-btn").forEach(function(btn){
+    btn.addEventListener("click",function(e){e.stopPropagation();openPin(btn.dataset.id);});
+  });
+  return div;
+}
+
+function showDetail(id){
+  var idea=curIdeas().find(function(i){return i.id===id;});
+  if(!idea){showBrowse();return;}
+  var m=document.getElementById("main");
+  m.innerHTML="";
+
+  var backBtn=document.createElement("button");
+  backBtn.className="back-btn";
+  backBtn.innerHTML="&#8592; Back to all ideas";
+  backBtn.addEventListener("click",showBrowse);
+  m.appendChild(backBtn);
+
+  var wrap=document.createElement("div");
+  wrap.style.maxWidth="720px";
+
+  var html="";
+  if(idea.imgUrl){html+="<a href='"+esc(idea.imgUrl)+"' target='_blank'><img class='detail-img' src='"+esc(idea.imgUrl)+"' alt=''></a>";}
+  html+="<div class='tags' style='margin-bottom:10px'><span class='tag "+tagS()+"'>"+esc(idea.subject||"General")+"</span>"+(idea.category?"<span class='tag "+tagC()+"'>"+esc(idea.category)+"</span>":"")+"</div>";
+  html+="<h2 style='font-size:22px;font-weight:500;margin-bottom:1rem;line-height:1.3'>"+esc(idea.title)+"</h2>";
+  html+="<div style='display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #f0efea'>";
+  html+="<div class='avatar "+avCls()+"' style='width:36px;height:36px;font-size:13px'>"+ini(idea.author)+"</div>";
+  html+="<div><div style='font-size:14px;font-weight:500'>"+esc(idea.author||"Anonymous")+"</div><div style='font-size:13px;color:#5c5c58'>"+fmtDate(idea.date)+"</div></div></div>";
+  html+="<div style='font-size:15px;line-height:1.85;white-space:pre-wrap;color:#1a1a18'>"+esc(idea.desc)+"</div>";
+  html+="<div style='display:flex;gap:8px;margin-top:1.5rem;flex-wrap:wrap'>";
+  html+="<button class='rxbtn lik' data-id='"+idea.id+"' data-field='likes'>&#128077; "+(idea.likes||0)+" likes</button>";
+  html+="<button class='rxbtn tri' data-id='"+idea.id+"' data-field='tried'>&#10003; "+(idea.tried||0)+" tried this</button>";
+  html+="<button class='shr' data-id='"+idea.id+"'>&#128279; Copy link</button></div>";
+
+  if(idea.file){
+    var isPdf=idea.file.name.toLowerCase().endsWith(".pdf");
+    html+="<div style='margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea'>";
+    html+="<p style='font-size:12px;font-weight:500;color:#969690;margin-bottom:8px;letter-spacing:.05em'>ATTACHMENT</p>";
+    if(isPdf)html+="<button class='btn btn-outline open-file-btn' style='margin-right:8px' data-id='"+idea.id+"'>&#128196; Open PDF</button>";
+    html+="<button class='btn btn-outline dl-file-btn' data-id='"+idea.id+"'>&#11015; Download "+esc(idea.file.name)+"</button></div>";
+  }
+
+  if(isAdmin){
+    html+="<div style='display:flex;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea'>";
+    html+="<button class='btn btn-outline edit-btn' data-id='"+idea.id+"'>&#9999;&#65039; Edit</button>";
+    html+="<button class='btn btn-red del-btn' data-id='"+idea.id+"'>&#128465; Delete</button></div>";
+  } else if(idea.pin){
+    html+="<div style='margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea'>";
+    html+="<button class='btn btn-outline pin-btn' data-id='"+idea.id+"'>&#9999;&#65039; Edit my idea</button></div>";
+  }
+
+  wrap.innerHTML=html;
+
+  wrap.querySelectorAll(".rxbtn").forEach(function(btn){
+    btn.addEventListener("click",function(){react(btn.dataset.id,btn.dataset.field);});
+  });
+  wrap.querySelectorAll(".shr").forEach(function(btn){
+    btn.addEventListener("click",function(){shareIdea(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".edit-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){showSubmit(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".del-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){delIdea(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".pin-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){openPin(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".dl-file-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){dlFile(btn.dataset.id);});
+  });
+  wrap.querySelectorAll(".open-file-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){openFile(btn.dataset.id);});
+  });
+
+  m.appendChild(wrap);
+  window.scrollTo(0,0);
+}
+
+function dlFile(id){var idea=curIdeas().find(function(i){return i.id===id;});if(!idea||!idea.file)return;var a=document.createElement("a");a.href=idea.file.data;a.download=idea.file.name;a.click();}
+function openFile(id){var idea=curIdeas().find(function(i){return i.id===id;});if(!idea||!idea.file)return;var w=window.open();w.document.write("<iframe src='"+idea.file.data+"' style='width:100%;height:100vh;border:none'></iframe>");}
+
+function showSubmit(editId){
+  var ed=editId?curIdeas().find(function(i){return i.id===editId;}):null;
+  imgData=ed?ed.imgUrl||null:null;
+  fileData=ed&&ed.file?ed.file.data:null;
+  fileInfo=ed&&ed.file?{name:ed.file.name,type:ed.file.type}:null;
+
+  var m=document.getElementById("main");
+  m.innerHTML="";
+
+  var backBtn=document.createElement("button");
+  backBtn.className="back-btn";
+  backBtn.innerHTML="&#8592; Back";
+  backBtn.addEventListener("click",showBrowse);
+  m.appendChild(backBtn);
+
+  var wrap=document.createElement("div");
+  wrap.style.maxWidth="560px";
+
+  var sOpts="<option value=''>&#8212; choose &#8212;</option>"+curSubjects().map(function(s){return "<option value='"+esc(s)+"'"+(ed&&ed.subject===s?" selected":"")+">"+esc(s)+"</option>";}).join("");
+  var cOpts="<option value=''>&#8212; choose &#8212;</option>"+curCats().map(function(c){return "<option value='"+esc(c)+"'"+(ed&&ed.category===c?" selected":"")+">"+esc(c)+"</option>";}).join("");
+
+  wrap.innerHTML=
+    "<h2 style='font-size:20px;font-weight:500;margin-bottom:.25rem'>"+(ed?"Edit idea":"Share an idea")+"</h2>"+
+    "<p style='font-size:13px;color:#969690;margin-bottom:1.5rem'>"+(sec==="academic"?"Academic":"Operational")+" section</p>"+
+    "<input type='hidden' id='editId' value='"+(editId||"")+"'>"+
+    "<div class='form-group'><label>Title *</label><input type='text' id='fTitle' placeholder='Give your idea a clear title' value='"+esc(ed?ed.title:"")+"'></div>"+
+    "<div class='form-group'><label>Description *</label><textarea id='fDesc' rows='7' placeholder='"+(sec==="academic"?"Describe the idea, how it works in practice, what went well, and any tips for colleagues. If possible, please also upload a screenshot showing what it looks like for pupils.":"Describe how you are using AI, what worked well, and any tips for colleagues. If helpful, please also upload a screenshot to help clarify your idea further.")+"'>"+esc(ed?ed.desc:"")+"</textarea></div>"+
+    "<div class='form-group form-row'>"+
+    "<div><label>"+(sec==="academic"?"Subject":"Department")+"</label><select id='fSubject'>"+sOpts+"</select></div>"+
+    "<div><label>Type of AI use</label><select id='fCategory'>"+cOpts+"</select></div>"+
+    "</div>"+
+    "<div class='form-group'><label>Your name</label><input type='text' id='fAuthor' placeholder='Anonymous if left blank' value='"+esc(ed?ed.author:"")+"'></div>"+
+    "<div class='form-group'><label>Personal edit PIN <span style='font-weight:400;color:#969690'>(optional)</span></label>"+
+    "<input type='password' id='fPin' placeholder='Choose a word or number you will remember'>"+
+    "<p class='hint'>Set this if you want to edit your idea later. PINs cannot be recovered if forgotten &mdash; please make a note of it. If you need help, contact basnettj@downehouse.net</p></div>"+
+    "<div class='form-group'><label>Image (optional)</label><div id='imgArea'></div></div>"+
+    "<div class='form-group'><label>File / document (optional)</label><div id='fileArea'></div></div>"+
+    "<div id='errBox'></div>"+
+    "<div style='margin-top:1.5rem;display:flex;gap:8px'>"+
+    "<button class='btn "+btnCls()+"' style='font-size:15px;padding:10px 28px' id='postBtn'>"+(ed?"Save changes":"Post idea")+"</button>"+
+    (ed?"<button class='btn btn-outline' id='cancelBtn'>Cancel</button>":"")+
+    "</div>";
+
+  m.appendChild(wrap);
+  renderImgArea();
+  renderFileArea();
+
+  document.getElementById("postBtn").addEventListener("click",doSubmit);
+  if(ed){document.getElementById("cancelBtn").addEventListener("click",showBrowse);}
+  window.scrollTo(0,0);
+}
+
+function renderImgArea(){
+  var area=document.getElementById("imgArea");
+  if(!area)return;
+  if(imgData){
+    area.innerHTML="<div class='file-chip "+chipCls()+"'><img src='"+imgData+"' style='height:48px;width:72px;object-fit:cover;border-radius:6px' alt=''><span style='flex:1'>Image added</span><button class='remove-btn' id='removeImg'>Remove</button></div>";
+    document.getElementById("removeImg").addEventListener("click",function(){imgData=null;renderImgArea();});
+  } else {
+    area.innerHTML="<button class='upload-btn' id='trigImg'>&#128444; Upload image</button><input type='file' id='imgFile' accept='image/*' style='display:none'>";
+    document.getElementById("trigImg").addEventListener("click",function(){document.getElementById("imgFile").click();});
+    document.getElementById("imgFile").addEventListener("change",function(){handleImg(this);});
+  }
+}
+
+function renderFileArea(){
+  var area=document.getElementById("fileArea");
+  if(!area)return;
+  if(fileInfo){
+    area.innerHTML="<div class='file-chip "+chipCls()+"'><span style='flex:1'>&#128206; "+esc(fileInfo.name)+"</span><button class='remove-btn' id='removeFile'>Remove</button></div>";
+    document.getElementById("removeFile").addEventListener("click",function(){fileData=null;fileInfo=null;renderFileArea();});
+  } else {
+    area.innerHTML="<button class='upload-btn' id='trigFile'>&#128206; Attach file</button><input type='file' id='docFile' accept='.pdf,.doc,.docx,.ppt,.pptx,.txt,.csv,.xlsx' style='display:none'><p class='hint'>PDF, Word, PowerPoint, Excel etc. Max 1 MB.</p>";
+    document.getElementById("trigFile").addEventListener("click",function(){document.getElementById("docFile").click();});
+    document.getElementById("docFile").addEventListener("change",function(){handleFile(this);});
+  }
+}
+
+function handleImg(input){
+  var f=input.files[0];if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=700,w=img.width,h=img.height;
+      if(w>h&&w>MAX){h=Math.round(h*MAX/w);w=MAX;}else if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+      var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+      imgData=c.toDataURL("image/jpeg",0.82);
+      renderImgArea();
+    };
+    img.src=e.target.result;
+  };
+  rd.readAsDataURL(f);
+}
+
+function handleFile(input){
+  var f=input.files[0];if(!f)return;
+  if(f.size>1.1*1024*1024){
+    var eb=document.getElementById("errBox");
+    if(eb)eb.innerHTML="<div class='err-box'>File too large (max 1 MB). Paste a Google Drive link in the description instead.</div>";
+    return;
+  }
+  var rd=new FileReader();
+  rd.onload=function(e){fileData=e.target.result;fileInfo={name:f.name,type:f.type};renderFileArea();};
+  rd.readAsDataURL(f);
+}
+
+function doSubmit(){
+  var title=document.getElementById("fTitle").value.trim();
+  var desc=document.getElementById("fDesc").value.trim();
+  var author=document.getElementById("fAuthor").value.trim();
+  var subject=document.getElementById("fSubject").value;
+  var category=document.getElementById("fCategory").value;
+  var pin=document.getElementById("fPin").value.trim();
+  var editId=document.getElementById("editId").value;
+  if(!title||!desc){document.getElementById("errBox").innerHTML="<div class='err-box'>Please add a title and description.</div>";return;}
+  var btn=document.getElementById("postBtn");btn.disabled=true;btn.textContent="Saving...";
+  document.getElementById("errBox").innerHTML="";
+  var existing=editId?curIdeas().find(function(i){return i.id===editId;}):null;
+  var idea={
+    id:editId||uid(),title:title,desc:desc,
+    author:author||"Anonymous",subject:subject||"General",category:category||"",
+    date:existing?existing.date:new Date().toISOString(),
+    imgUrl:imgData||null,
+    file:fileData?{name:fileInfo.name,type:fileInfo.type,data:fileData}:null,
+    pin:pin||(existing?existing.pin||"":""),
+    likes:existing?existing.likes||0:0,
+    tried:existing?existing.tried||0:0
+  };
+  fbSave(sec,idea).then(function(){
+    if(existing){var idx=ideas[sec].indexOf(existing);if(idx>=0)ideas[sec][idx]=idea;}
+    else{ideas[sec].unshift(idea);}
+    showBrowse();
+  }).catch(function(){
+    document.getElementById("errBox").innerHTML="<div class='err-box'>Could not save. Check your connection and try again.</div>";
+    btn.disabled=false;btn.textContent=editId?"Save changes":"Post idea";
+  });
+}
+
+function delIdea(id){
+  if(!confirm("Delete this idea? This cannot be undone."))return;
+  fbDel(sec,id).then(function(){ideas[sec]=ideas[sec].filter(function(i){return i.id!==id;});showBrowse();})
+    .catch(function(){alert("Could not delete. Please try again.");});
+}
+
+function react(id,field){
+  var idea=curIdeas().find(function(i){return i.id===id;});
+  if(!idea)return;
+  idea[field]=(idea[field]||0)+1;
+  fbSave(sec,idea).then(function(){
+    document.querySelectorAll("[data-id='"+id+"'][data-field='"+field+"']").forEach(function(btn){
+      if(field==="likes")btn.innerHTML="&#128077; "+idea.likes+(btn.closest(".card")?"":(" likes"));
+      else btn.innerHTML="&#10003; "+idea.tried+(btn.closest(".card")?(" tried"):(" tried this"));
+    });
+  }).catch(function(){idea[field]=Math.max(0,(idea[field]||1)-1);});
+}
+
+function shareIdea(id){
+  var url=window.location.href.split("?")[0]+"?section="+sec+"&idea="+id;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){showToast("Link copied to clipboard!");});
+  } else {
+    var inp=document.createElement("input");inp.value=url;document.body.appendChild(inp);inp.select();document.execCommand("copy");document.body.removeChild(inp);
+    showToast("Link copied to clipboard!");
+  }
+}
+
+function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},2500);}
+
+function checkUrl(){
+  var p=new URLSearchParams(window.location.search);
+  var s=p.get("section");var id=p.get("idea");
+  if(s&&(s==="academic"||s==="operational")&&s!==sec)switchSection(s);
+  if(id){var idea=curIdeas().find(function(i){return i.id===id;});if(idea)showDetail(id);}
+}
+
+function openPin(id){
+  pendingPin=id;
+  document.getElementById("pinInput").value="";document.getElementById("pinErr").textContent="";
+  document.getElementById("pinModal").style.display="flex";
+  setTimeout(function(){document.getElementById("pinInput").focus();},50);
+}
+function closePinModal(){document.getElementById("pinModal").style.display="none";pendingPin=null;}
+
+document.getElementById("pinConfirmBtn").addEventListener("click",function(){
+  var idea=curIdeas().find(function(i){return i.id===pendingPin;});
+  if(!idea){closePinModal();return;}
+  if(document.getElementById("pinInput").value.trim()===idea.pin){closePinModal();showSubmit(pendingPin);}
+  else{document.getElementById("pinErr").textContent="Incorrect PIN. Please try again.";document.getElementById("pinInput").select();}
+});
+document.getElementById("pinCancelBtn").addEventListener("click",closePinModal);
+document.getElementById("pinInput").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("pinConfirmBtn").click();});
+document.getElementById("pinModal").addEventListener("click",function(e){if(e.target===this)closePinModal();});
+
+document.getElementById("adminBtn").addEventListener("click",function(){
+  if(isAdmin){logoutAdmin();return;}
+  document.getElementById("adminPwInput").value="";document.getElementById("adminPwErr").textContent="";
+  document.getElementById("adminModal").style.display="flex";
+  setTimeout(function(){document.getElementById("adminPwInput").focus();},50);
+});
+document.getElementById("adminLoginBtn").addEventListener("click",function(){
+  if(document.getElementById("adminPwInput").value===ADMIN_PASSWORD){
+    isAdmin=true;closeAdminModal();document.getElementById("adminBtn").textContent="&#128275; Admin";renderBrowse();
+  } else {
+    document.getElementById("adminPwErr").textContent="Incorrect password.";document.getElementById("adminPwInput").select();
+  }
+});
+document.getElementById("adminCancelBtn").addEventListener("click",closeAdminModal);
+document.getElementById("adminPwInput").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("adminLoginBtn").click();});
+document.getElementById("adminModal").addEventListener("click",function(e){if(e.target===this)closeAdminModal();});
+function closeAdminModal(){document.getElementById("adminModal").style.display="none";}
+function logoutAdmin(){isAdmin=false;document.getElementById("adminBtn").textContent="&#128274; Admin";renderBrowse();}
+
+document.getElementById("shareBtn").addEventListener("click",function(){showSubmit(null);});
+document.getElementById("homeLogo").addEventListener("click",function(){showLanding();});
+loadAll();
+</script>
+</body>
+</html>
