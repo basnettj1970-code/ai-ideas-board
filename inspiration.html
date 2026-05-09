@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Need Inspiration? — AI Ideas Board</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#faf9f6;color:#1a1a18;min-height:100vh}
+header{background:#1d6e5e;padding:0 24px;position:sticky;top:0;z-index:10}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+.logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500;color:#fff;text-decoration:none}
+.back-link{font-size:14px;color:rgba(255,255,255,0.8);text-decoration:none;display:flex;align-items:center;gap:6px}
+.back-link:hover{color:#fff}
+main{max-width:760px;margin:0 auto;padding:2.5rem 24px 4rem}
+h1{font-size:26px;font-weight:500;margin-bottom:.5rem;color:#1a1a18}
+.subtitle{font-size:15px;color:#5c5c58;margin-bottom:2rem;line-height:1.6}
+.form-card{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:1.75rem;margin-bottom:1.5rem}
+.form-group{margin-bottom:1.1rem}
+label{display:block;font-size:13px;font-weight:500;color:#5c5c58;margin-bottom:6px}
+input[type=text],select{width:100%;font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a18;outline:none;transition:border-color .15s,box-shadow .15s}
+input[type=text]:focus,select:focus{border-color:#1d6e5e;box-shadow:0 0 0 3px rgba(29,110,94,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.btn{font-family:inherit;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background .15s}
+.btn-green{background:#1d6e5e;color:#fff}
+.btn-green:hover{background:#155046}
+.btn-outline{background:#fff;color:#5c5c58;border:1px solid #e0e0db}
+.btn-outline:hover{background:#f5f5f2}
+.hint{font-size:12px;color:#969690;margin-top:5px}
+.error-box{padding:10px 14px;background:#fdf0f0;color:#b91c1c;border-radius:8px;font-size:13px;margin-top:12px}
+/* Results */
+.results-card{background:#fff;border:1px solid #e5e5e0;border-radius:12px;overflow:hidden;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.results-top{padding:1.25rem 1.5rem;border-bottom:1px solid #f0efea;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.results-top h2{font-size:16px;font-weight:500;color:#1a1a18}
+.results-top p{font-size:13px;color:#5c5c58}
+.prompt-box{padding:1.5rem;background:#f8f7f4;font-family:monospace;font-size:13px;line-height:1.75;color:#1a1a18;white-space:pre-wrap;word-break:break-word;border-bottom:1px solid #f0efea}
+.results-actions{padding:1rem 1.5rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.copy-success{font-size:13px;color:#166534;font-weight:500;display:none}
+.how-to{background:#e8f4f1;border-radius:12px;padding:1.25rem 1.5rem;margin-top:1.25rem;font-size:14px;color:#155046;line-height:1.7}
+.how-to strong{font-weight:500}
+.how-to ol{margin:8px 0 0 1.2rem}
+.how-to li{margin-bottom:4px}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="9,2 16,6 9,10 2,6"/><polyline points="2,10 9,14 16,10"/>
+      </svg>
+      AI Ideas Board
+    </div>
+    <a href="index.html" class="back-link">&#8592; Back to Ideas Board</a>
+  </div>
+</header>
+
+<main>
+  <h1>&#127775; Need inspiration?</h1>
+  <p class="subtitle">Tell us what you're teaching and we'll generate a ready-to-use prompt you can paste straight into Claude, ChatGPT or Copilot — giving you lesson ideas that bring AI into your subject while building pupils' AI literacy skills.</p>
+
+  <div class="form-card">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Subject *</label>
+        <input type="text" id="fSubject" placeholder="e.g. French, History, Biology">
+      </div>
+      <div class="form-group">
+        <label>Year group *</label>
+        <select id="fYear">
+          <option value="">— choose —</option>
+          <option>Remove</option>
+          <option>Lower Four</option>
+          <option>Upper Four</option>
+          <option>Lower Five</option>
+          <option>Upper Five</option>
+          <option>Lower Sixth</option>
+          <option>Upper Sixth</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Topic being taught *</label>
+      <input type="text" id="fTopic" placeholder="e.g. The causes of World War One, Photosynthesis, La maison">
+      <p class="hint">Be as specific as you like — the more detail, the better the suggestions.</p>
+    </div>
+    <div id="errBox"></div>
+    <div style="margin-top:1.25rem">
+      <button class="btn btn-green" id="generateBtn" onclick="generate()">&#10024; Generate prompt</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
+</main>
+
+<script>
+function generate() {
+  var subject = document.getElementById("fSubject").value.trim();
+  var year    = document.getElementById("fYear").value;
+  var topic   = document.getElementById("fTopic").value.trim();
+  var errBox  = document.getElementById("errBox");
+  var output  = document.getElementById("output");
+
+  errBox.innerHTML = "";
+  if (!subject || !year || !topic) {
+    errBox.innerHTML = "<div class='error-box' style='margin-top:12px'>Please fill in all three fields.</div>";
+    return;
+  }
+
+  var prompt = buildPrompt(subject, year, topic);
+  renderOutput(subject, year, topic, prompt);
+}
+
+function buildPrompt(subject, year, topic) {
+  return "You are an expert in AI literacy education and pedagogy. A teacher at an independent girls' school needs practical, classroom-ready ideas for how to use AI tools in their lesson while simultaneously teaching pupils about AI literacy.\n\nTeacher details:\n- Subject: " + subject + "\n- Year group: " + year + "\n- Topic: " + topic + "\n\nGenerate between 3 and 5 lesson ideas (vary the number based on how rich the topic is for AI literacy opportunities). Each idea should:\n1. Be immediately practical and classroom-ready\n2. Relate directly to the specific topic being taught\n3. Develop a named AI literacy skill — choose from: Critiquing Output, Bias & Perspective, Prompt Writing, Refining Prompts, Understanding AI Limitations, Ethics & Responsibility, Fact Checking, Creative Collaboration\n4. Be suitable for the year group specified\n5. Reference relevant curriculum content where appropriate (GCSE, A Level, KS3 etc.)\n\nFor each idea, give it a short catchy title, name the AI literacy skill it develops, and write 2-3 sentences describing the activity in practical terms a teacher can act on immediately.\n\nFormat the response clearly with numbered ideas, the AI literacy skill in brackets after the title, and the description as a short paragraph.";
+}
+
+function renderOutput(subject, year, topic, prompt) {
+  var output = document.getElementById("output");
+  var escaped = prompt.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+  output.innerHTML =
+    "<div class='results-card'>" +
+      "<div class='results-top'>" +
+        "<div>" +
+          "<h2>Your prompt is ready</h2>" +
+          "<p>" + esc(subject) + " &mdash; " + esc(year) + " &mdash; " + esc(topic) + "</p>" +
+        "</div>" +
+      "</div>" +
+      "<div class='prompt-box' id='promptText'>" + escaped + "</div>" +
+      "<div class='results-actions'>" +
+        "<button class='btn btn-green' onclick='copyPrompt()'>&#128203; Copy prompt</button>" +
+        "<button class='btn btn-outline' onclick='openClaude()'>Open Claude.ai</button>" +
+        "<button class='btn btn-outline' onclick='openChatGPT()'>Open ChatGPT</button>" +
+        "<span class='copy-success' id='copySuccess'>&#10003; Copied!</span>" +
+      "</div>" +
+    "</div>" +
+    "<div class='how-to'>" +
+      "<strong>How to use this:</strong>" +
+      "<ol>" +
+        "<li>Click <strong>Copy prompt</strong> above</li>" +
+        "<li>Open Claude.ai, ChatGPT or Copilot in a new tab</li>" +
+        "<li>Paste the prompt and press Enter</li>" +
+        "<li>Browse the ideas and adapt them for your class</li>" +
+        "<li>Found something great? Share it on the <a href='index.html' style='color:#155046'>AI Ideas Board</a>!</li>" +
+      "</ol>" +
+    "</div>";
+
+  output.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function copyPrompt() {
+  var text = document.getElementById("promptText").innerText;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() { showCopied(); });
+  } else {
+    var el = document.createElement("textarea");
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    document.body.removeChild(el);
+    showCopied();
+  }
+}
+
+function showCopied() {
+  var s = document.getElementById("copySuccess");
+  s.style.display = "inline";
+  setTimeout(function(){ s.style.display = "none"; }, 2500);
+}
+
+function openClaude() {
+  copyPrompt();
+  window.open("https://claude.ai", "_blank");
+}
+
+function openChatGPT() {
+  copyPrompt();
+  window.open("https://chatgpt.com", "_blank");
+}
+
+function esc(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && (e.target.id === "fSubject" || e.target.id === "fTopic")) generate();
+});
+</script>
+</body>
+</html>
