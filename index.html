@@ -168,7 +168,7 @@ var PROFESSIONAL_CATEGORIES = ["Admin & Organisation","Budget & Finance","Commun
 
 var school = "dh";
 var sec = "academic";
-var ideas = {dh:{academic:[],professional:[]},harrow:{academic:[],professional:[]},shared:[]};
+var ideas = {dh:{academic:[],professional:[]},harrow:{academic:[],professional:[]}};
 var isAdmin = false;
 var fSub = "All", fCat = "All types", fQ = "", fSort = "newest";
 var imgData = null, fileData = null, fileInfo = null, pendingPin = null;
@@ -237,7 +237,7 @@ function accentColor(){
   return "#4a4a46";
 }
 function secDesc(){
-  if(school==="shared") return "Ideas shared from both Downe House and Harrow School. Use the filters to explore by subject, type, or school.";
+
   if(school==="dh") return sec==="academic"
     ?"The AI Ideas Board is a place for colleagues to share ideas for AI use — whether for your own admin and resource creation, or for activities undertaken in the classroom. Browse what others are trying, add your own ideas, and help build a shared picture of AI across Downe House."
     :"The AI Ideas Board is a place for Professional Services colleagues to share how AI is helping with day-to-day tasks — from drafting communications and sorting data to planning and research. Browse ideas from across the school and add your own.";
@@ -268,9 +268,9 @@ function updateHeader(){
     shareBtn.style.display="inline-flex";
     shareBtn.className="btn btn-harrow";
   } else {
-    hdr.className="hdr-shared";
+
     logo.src=DH_LOGO;
-    title.textContent="AI Ideas Board — Shared Ideas";
+
     switcher.style.display="none";
     shareBtn.style.display="none";
   }
@@ -291,19 +291,19 @@ function loadAll(){
         ideas[pair[0]][pair[1]].sort(function(a,b){return new Date(b.date)-new Date(a.date);});
       }
     });
-    // Build shared feed
-    ideas.shared=[];
-    ["dh","harrow"].forEach(function(s){
-      ["academic","professional"].forEach(function(sec){
-        ideas[s][sec].forEach(function(idea){
-          if(idea.shared!==false){
-            ideas.shared.push(Object.assign({},idea,{_school:s}));
-          }
-        });
-      });
-    });
-    ideas.shared.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-    showLanding();
+
+
+
+
+
+
+
+
+
+
+
+
+
   }).catch(function(){showLanding();});
 }
 
@@ -317,7 +317,7 @@ function showLanding(){
 
   var dhCount=ideas.dh.academic.length+ideas.dh.professional.length;
   var harrowCount=ideas.harrow.academic.length+ideas.harrow.professional.length;
-  var sharedCount=ideas.shared.length;
+
 
   var m=document.getElementById("main");
   m.innerHTML="";
@@ -332,20 +332,20 @@ function showLanding(){
       "<button id='landDH' style='flex:1;min-width:200px;max-width:240px;padding:1.75rem;background:#1d6e5e;color:#fff;border:none;border-radius:14px;cursor:pointer;font-family:inherit;font-size:18px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:10px;transition:background .15s'>"+
         "<img src='"+DH_LOGO+"' alt='DH' style='width:52px;height:52px;object-fit:contain'>"+
         "Downe House"+
-        "<span style='font-size:13px;opacity:.85;font-weight:400'>"+dhCount+" ideas</span>"+
+        "<span style='font-size:13px;opacity:.85;font-weight:400'>Lesson ideas &amp; classroom activities</span>"+
       "</button>"+
       "<button id='landHarrow' style='flex:1;min-width:200px;max-width:240px;padding:1.75rem;background:#001846;color:#fff;border:none;border-radius:14px;cursor:pointer;font-family:inherit;font-size:18px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:10px;transition:background .15s'>"+
         "<img src='"+HARROW_LOGO+"' alt='Harrow' style='width:52px;height:52px;object-fit:contain'>"+
         "Harrow School"+
-        "<span style='font-size:13px;opacity:.85;font-weight:400'>"+harrowCount+" ideas</span>"+
+        "<span style='font-size:13px;opacity:.85;font-weight:400'>Lesson ideas &amp; classroom activities</span>"+
       "</button>"+
-      "<button id='landShared' style='flex:1;min-width:200px;max-width:240px;padding:1.75rem;background:#4a4a46;color:#fff;border:none;border-radius:14px;cursor:pointer;font-family:inherit;font-size:18px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:10px;transition:background .15s'>"+
-        "<span style='font-size:42px'>&#128279;</span>"+
-        "Shared Ideas"+
-        "<span style='font-size:13px;opacity:.85;font-weight:400'>"+sharedCount+" from both schools</span>"+
-      "</button>"+
-    "</div>"+
-    "<div style='margin-top:1.5rem'>"+
+
+
+
+
+
+
+
       "<a href='inspiration.html' style='text-decoration:none'>"+
         "<div style='background:#e8f4f1;border:1.5px solid #1d6e5e;border-radius:12px;padding:1.75rem 2rem;display:flex;align-items:flex-start;gap:16px;text-align:left'>"+
           "<div style='width:56px;height:56px;background:#1d6e5e;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:28px'>&#128161;</div>"+
@@ -362,7 +362,7 @@ function showLanding(){
 
   document.getElementById("landDH").addEventListener("click",function(){switchSchool("dh");});
   document.getElementById("landHarrow").addEventListener("click",function(){switchSchool("harrow");});
-  document.getElementById("landShared").addEventListener("click",function(){switchSchool("shared");});
+
   window.scrollTo(0,0);
 }
 
@@ -440,7 +440,7 @@ function renderBrowse(){
 }
 
 function getVis(){
-  var pool=school==="shared"?ideas.shared:curIdeas();
+  var pool=curIdeas();
   return pool.filter(function(i){
     var q=fQ.toLowerCase();
     var mq=!q||[i.title,i.desc,i.subject,i.category,i.author].some(function(x){return(x||"").toLowerCase().includes(q);});
@@ -497,12 +497,12 @@ function makeCard(idea){
   html+="<button class='rxbtn tri' data-id='"+idea.id+"' data-field='tried'>&#10003; "+(idea.tried||0)+" tried</button>";
   html+="<button class='shr' data-id='"+idea.id+"'>&#128279; Share</button>";
   html+="</div>";
-  if(isAdmin&&school!=="shared"){
+  if(isAdmin){
     html+="<div style='display:flex;gap:6px;margin-top:8px'>";
     html+="<button class='btn btn-outline btn-sm edit-btn' data-id='"+idea.id+"' style='font-size:12px'>&#9999;&#65039; Edit</button>";
     html+="<button class='btn btn-red btn-sm del-btn' data-id='"+idea.id+"' style='font-size:12px'>&#128465; Delete</button>";
     html+="</div>";
-  } else if(idea.pin&&school!=="shared"){
+  } else if(idea.pin){
     html+="<div style='margin-top:8px'><button class='btn btn-outline btn-sm pin-btn' data-id='"+idea.id+"' style='font-size:12px'>&#9999;&#65039; Edit my idea</button></div>";
   }
   html+="</div>";
@@ -562,11 +562,11 @@ function showDetail(id){
     if(isPdf)html+="<button class='btn btn-outline open-file-btn' style='margin-right:8px' data-id='"+idea.id+"'>&#128196; Open PDF</button>";
     html+="<button class='btn btn-outline dl-file-btn' data-id='"+idea.id+"'>&#11015; Download "+esc(idea.file.name)+"</button></div>";
   }
-  if(isAdmin&&school!=="shared"){
+  if(isAdmin){
     html+="<div style='display:flex;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea'>";
     html+="<button class='btn btn-outline edit-btn' data-id='"+idea.id+"'>&#9999;&#65039; Edit</button>";
     html+="<button class='btn btn-red del-btn' data-id='"+idea.id+"'>&#128465; Delete</button></div>";
-  } else if(idea.pin&&school!=="shared"){
+  } else if(idea.pin){
     html+="<div style='margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0efea'>";
     html+="<button class='btn btn-outline pin-btn' data-id='"+idea.id+"'>&#9999;&#65039; Edit my idea</button></div>";
   }
@@ -602,7 +602,7 @@ function showSubmit(editId){
   var cOpts="<option value=''>&#8212; choose &#8212;</option>"+curCats().map(function(c){return "<option value='"+esc(c)+"'"+(ed&&ed.category===c?" selected":"")+">"+esc(c)+"</option>";}).join("");
   var schoolLabel=school==="dh"?"Downe House":"Harrow School";
   var sectionLabel=sec==="academic"?"Academic":"Professional Services";
-  var sharedChecked=ed?(ed.shared!==false):"checked";
+
   wrap.innerHTML=
     "<h2 style='font-size:20px;font-weight:500;margin-bottom:.25rem'>"+(ed?"Edit idea":"Share an idea")+"</h2>"+
     "<p style='font-size:13px;color:#969690;margin-bottom:1.5rem'>"+schoolLabel+" &mdash; "+sectionLabel+"</p>"+
@@ -619,8 +619,8 @@ function showSubmit(editId){
     "<p class='hint'>Set this if you want to edit your idea later. PINs cannot be recovered if forgotten &mdash; please make a note of it. If you need help, contact basnettj@downehouse.net</p></div>"+
     "<div class='form-group' style='background:#e8f4f1;border:1px solid #1d6e5e;border-radius:8px;padding:12px 14px'>"+
     "<label style='display:flex;align-items:center;gap:10px;cursor:pointer;color:#155046'>"+
-    "<input type='checkbox' id='fShared' "+(sharedChecked?"checked":"")+"> "+
-    "Share this idea on the <strong>Shared Ideas</strong> page (visible to both schools)</label>"+
+
+
     "<p class='hint' style='margin-top:6px;color:#1d6e5e'>Untick to keep this idea visible only within "+schoolLabel+".</p></div>"+
     "<div class='form-group'><label>Image (optional)</label><div id='imgArea'></div></div>"+
     "<div class='form-group'><label>File / document (optional)</label><div id='fileArea'></div></div>"+
@@ -694,7 +694,7 @@ function doSubmit(){
   var subject=document.getElementById("fSubject").value;
   var category=document.getElementById("fCategory").value;
   var pin=document.getElementById("fPin").value.trim();
-  var shared=document.getElementById("fShared").checked;
+
   var editId=document.getElementById("editId").value;
   if(!title||!desc){document.getElementById("errBox").innerHTML="<div class='err-box'>Please add a title and description.</div>";return;}
   var btn=document.getElementById("postBtn");btn.disabled=true;btn.textContent="Saving...";
@@ -709,21 +709,21 @@ function doSubmit(){
     pin:pin||(existing?existing.pin||"":""),
     likes:existing?existing.likes||0:0,
     tried:existing?existing.tried||0:0,
-    shared:shared,
+    shared:true,
     _section:sec
   };
   fbSave(school,sec,idea).then(function(){
     if(existing){var idx=ideas[school][sec].indexOf(existing);if(idx>=0)ideas[school][sec][idx]=idea;}
     else{ideas[school][sec].unshift(idea);}
-    // Rebuild shared feed
-    ideas.shared=[];
-    ["dh","harrow"].forEach(function(s){
-      ["academic","professional"].forEach(function(section){
-        ideas[s][section].forEach(function(i){
-          if(i.shared!==false)ideas.shared.push(Object.assign({},i,{_school:s}));
-        });
-      });
-    });
+
+
+
+
+
+
+
+
+
     showBrowse();
   }).catch(function(){
     document.getElementById("errBox").innerHTML="<div class='err-box'>Could not save. Check your connection and try again.</div>";
@@ -735,7 +735,7 @@ function delIdea(id){
   if(!confirm("Delete this idea? This cannot be undone."))return;
   fbDel(school,sec,id).then(function(){
     ideas[school][sec]=ideas[school][sec].filter(function(i){return i.id!==id;});
-    ideas.shared=ideas.shared.filter(function(i){return i.id!==id;});
+
     showBrowse();
   }).catch(function(){alert("Could not delete. Please try again.");});
 }
