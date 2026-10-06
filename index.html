@@ -247,6 +247,31 @@ function secDesc(){
 }
 
 function updateHeader(){
+  // Restore normal header HTML if it was replaced by split header
+  if(!document.getElementById("headerLogo")){
+    document.getElementById("siteHeader").innerHTML=
+      "<div class='header-top'>"+
+      "<div class='logo' id='homeLogo' style='cursor:pointer'>"+
+      "<img id='headerLogo' src='"+DH_LOGO+"' alt='Logo' style='height:44px;width:44px;object-fit:contain;flex-shrink:0'>"+
+      "<span class='logo-divider' id='logoDivider'>|</span>"+
+      "<span id='headerTitle'>AI Ideas Board</span>"+
+      "</div>"+
+      "<div class='header-right'>"+
+      "<button class='btn btn-ghost btn-sm' id='adminBtn'>&#128274; Admin</button>"+
+      "<button class='btn btn-green' id='shareBtn' style='display:none'>+ Share an idea</button>"+
+      "</div></div>"+
+      "<div class='section-switcher' id='sectionSwitcher' style='display:none'>"+
+      "<button class='switcher-btn active' id='btnAcademic'>&#127891; Academic Staff</button>"+
+      "<button class='switcher-btn' id='btnProfessional'>&#128188; Professional Services</button>"+
+      "</div>";
+    document.getElementById("siteHeader").style.background="";
+    document.getElementById("siteHeader").style.padding="0 24px";
+    document.getElementById("homeLogo").addEventListener("click",function(){showLanding();});
+    document.getElementById("adminBtn").addEventListener("click",adminClickHandler);
+    document.getElementById("shareBtn").addEventListener("click",function(){showSubmit(null);});
+    document.getElementById("btnAcademic").addEventListener("click",function(){switchSec("academic");});
+    document.getElementById("btnProfessional").addEventListener("click",function(){switchSec("professional");});
+  }
   var hdr=document.getElementById("siteHeader");
   var logo=document.getElementById("headerLogo");
   var title=document.getElementById("headerTitle");
@@ -297,9 +322,23 @@ function loadAll(){
 
 function showLanding(){
   school="landing"; sec="academic";
-  document.getElementById("siteHeader").className="hdr-dh";
-  document.getElementById("headerLogo").src=DH_LOGO;
-  document.getElementById("headerTitle").textContent="AI Ideas Board";
+  var hdr=document.getElementById("siteHeader");
+  hdr.className="";
+  hdr.style.background="linear-gradient(to right, #1d6e5e 50%, #001846 50%)";
+  hdr.style.padding="0";
+  hdr.innerHTML=
+    "<div style='display:flex;align-items:center;justify-content:space-between'>"+
+    "<div style='flex:1;padding:14px 24px;display:flex;align-items:center;gap:12px;cursor:pointer' id='dhHeaderBtn'>"+
+    "<img src='"+DH_LOGO+"' alt='DH' style='height:40px;width:40px;object-fit:contain;flex-shrink:0'>"+
+    "<span style='font-size:17px;font-weight:500;color:#fff'>Downe House</span>"+
+    "</div>"+
+    "<div style='flex:1;padding:14px 24px;display:flex;align-items:center;gap:12px;cursor:pointer;justify-content:flex-end' id='harrowHeaderBtn'>"+
+    "<span style='font-size:17px;font-weight:500;color:#fff'>Harrow School</span>"+
+    "<img src='"+HARROW_LOGO+"' alt='Harrow' style='height:40px;width:40px;object-fit:contain;flex-shrink:0'>"+
+    "</div>"+
+    "</div>";
+  document.getElementById("dhHeaderBtn").addEventListener("click",function(){switchSchool("dh");});
+  document.getElementById("harrowHeaderBtn").addEventListener("click",function(){switchSchool("harrow");});
   document.getElementById("sectionSwitcher").style.display="none";
   document.getElementById("shareBtn").style.display="none";
 
@@ -769,12 +808,13 @@ document.getElementById("pinCancelBtn").addEventListener("click",closePinModal);
 document.getElementById("pinInput").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("pinConfirmBtn").click();});
 document.getElementById("pinModal").addEventListener("click",function(e){if(e.target===this)closePinModal();});
 
-document.getElementById("adminBtn").addEventListener("click",function(){
+function adminClickHandler(){
   if(isAdmin){logoutAdmin();return;}
   document.getElementById("adminPwInput").value="";document.getElementById("adminPwErr").textContent="";
   document.getElementById("adminModal").style.display="flex";
   setTimeout(function(){document.getElementById("adminPwInput").focus();},50);
-});
+}
+document.getElementById("adminBtn").addEventListener("click",adminClickHandler);
 document.getElementById("adminLoginBtn").addEventListener("click",function(){
   var pw=document.getElementById("adminPwInput").value;
   if(pw===DH_ADMIN||pw===HARROW_ADMIN){
